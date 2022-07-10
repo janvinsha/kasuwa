@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Header from "./Header";
 
 import AppContext from "../context/AppContext";
+import { GlobalStyle } from "../components";
 
 const Layout = ({ children }) => {
   const [theme, setTheme] = useState(true);
@@ -13,7 +14,8 @@ const Layout = ({ children }) => {
 
   return (
     <StyledLayout>
-      <AppContext.Provider value={{}}>
+      <AppContext.Provider value={{ theme }}>
+        <GlobalStyle theme={theme} />
         <Header />
         {children}
       </AppContext.Provider>
