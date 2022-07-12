@@ -12,7 +12,8 @@ const Header = () => {
 
   const router = useRouter();
   const { pathname } = router;
-  const { theme } = useContext(AppContext);
+  const { theme, connectWallet, currentAccount, disconnectWallet } =
+    useContext(AppContext);
 
   return (
     <StyledHeader menuToggle={menuToggle} theme_={theme}>
@@ -35,28 +36,23 @@ const Header = () => {
         </div>
 
         <div className="link">
-          <Link
-            href="/listings"
-            className={pathname == "/listings" ? "active" : ""}
-          >
+          <Link href="/swap" className={pathname == "/swap" ? "active" : ""}>
             Swap
-          </Link>
-        </div>
-        <div className="link">
-          <Link
-            href="/listings"
-            className={pathname == "/listings" ? "active" : ""}
-          >
-            Poap
           </Link>
         </div>
         <HeaderSearch />
       </div>
       <motion.div className="right">
         <button onClick={() => router.push("/list")}>List Item</button>
-        <button onClick={() => {}} className="secondary-btn">
-          Connect Wallet
-        </button>
+        {currentAccount ? (
+          <button onClick={() => disconnectWallet()} className="secondary-btn">
+            Disconnect Wallet
+          </button>
+        ) : (
+          <button onClick={() => connectWallet()} className="secondary-btn">
+            Connect Wallet
+          </button>
+        )}
       </motion.div>
       <motion.div className="mobileNav">
         <span className="icon">
@@ -111,7 +107,7 @@ const StyledHeader = styled(motion.div)<{
   align-items: center;
   justify-content: center;
   padding: 1.5rem 4rem;
-  border-bottom: 2px solid #bdc1d0;
+  border-bottom: 2px solid ${({ theme_ }) => (theme_ ? " #bdc1d0" : " #eeeaea")};
   @media (max-width: 900px) {
     justify-content: space-between;
     padding: 2.5rem 1.5rem;

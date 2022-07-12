@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import styled from "styled-components";
-
-const Page = ({ children }) => {
+interface Props {
+  children: any;
+}
+const Page = ({ children }: Props) => {
   return <StyledPage>{children}</StyledPage>;
 };
 

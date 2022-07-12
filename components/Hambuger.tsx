@@ -1,19 +1,23 @@
-import { FC } from "react";
+import React, { useContext } from "react";
 import styled from "styled-components";
+import AppContext from "../context/AppContext";
+
 interface Props {
   open: boolean;
   onClick?: () => void;
 }
-const Hambuger: FC<Props> = ({ onClick, open }) => {
+const Hambuger = ({ onClick, open }: Props) => {
+  const { theme } = useContext(AppContext);
+
   return (
-    <StyledHambuger onClick={onClick} open={open}>
+    <StyledHambuger onClick={onClick} open={open} theme_={theme}>
       <div className="bar top"></div>
       <div className="bar bottom"></div>
     </StyledHambuger>
   );
 };
 
-const StyledHambuger = styled.div<{ open: boolean }>`
+const StyledHambuger = styled.div<{ open: boolean; theme_: boolean }>`
   display: flex;
   flex-flow: column wrap;
   justify-content: space-between;
@@ -34,7 +38,7 @@ const StyledHambuger = styled.div<{ open: boolean }>`
 
   .bar {
     height: 3px;
-    background: white;
+    background: ${({ theme_ }) => (theme_ ? "#f2f2f2" : "#24242b")};
     border-radius: 5px;
     margin: 2px 0px;
     transform-origin: left;

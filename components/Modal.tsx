@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useContext } from "react";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import CloseIcon from "@mui/icons-material/Close";
+
+import AppContext from "../context/AppContext";
+
 interface Props {
   show: boolean;
   onClose?: () => void;
@@ -20,9 +23,10 @@ const Modal = ({
   onClose,
   backdropStyle,
   title,
-  theme,
 }: Props) => {
   const modalRef = useRef(null);
+  const { theme } = useContext(AppContext);
+
   useEffect(() => {
     if (show) {
       modalRef.current.classList.add("visible");

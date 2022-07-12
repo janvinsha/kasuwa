@@ -5,7 +5,10 @@ import styled from "styled-components";
 import AppContext from "../context/AppContext";
 
 import SearchIcon from "@mui/icons-material/Search";
-const HeaderSearch = ({}) => {
+interface Props {
+  children: any;
+}
+const HeaderSearch = ({}: Props) => {
   const { theme } = useContext(AppContext);
 
   const router = useRouter();
@@ -38,7 +41,8 @@ const StyledHeaderSearch = styled.div<{ theme_: boolean }>`
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    border: 2px solid #bdc1d0;
+    border: 2px solid ${({ theme_ }) => (theme_ ? " #bdc1d0" : " #eeeaea")};
+
     .icon {
       color: #bdc1d0;
     }

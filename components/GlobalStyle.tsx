@@ -25,10 +25,9 @@ button{
   border:none;
   border-radius:2rem;
   border:2px solid #0592ec;
-  padding:0.3rem 1rem;
+  padding:0.4rem 1rem;
   font-size:1.2rem;
-  min-width:8rem;
-  min-height:2.8rem
+
 }
 .theme-btn{
     padding:0.1rem 0.5rem;
@@ -38,7 +37,7 @@ button{
   background:inherit;
   border:2px solid #0592ec;
   border-radius:0.4rem;
-  padding:0.3rem 1rem;
+padding:0.4rem 1rem;
   font-size:1.2rem;
   color:${({ theme }) => (theme ? "white" : "black")};
   display:flex;
@@ -52,7 +51,7 @@ button{
   background:none;
   gap:0.5rem;
   border:2px solid #0592ec;
-  padding:0.3rem 1rem;
+padding:0.4rem 1rem;
   border-radius:0.4rem;
   color:${({ theme }) => (theme ? "white" : "black")};
     img{  
@@ -70,7 +69,6 @@ a{
 .App{
  
     font-family: 'Rubik', sans-serif;
-
     background: ${({ theme }) =>
       theme ? "rgba(22,22,26,1)" : "rgba(255,255,255,1)"};
    
