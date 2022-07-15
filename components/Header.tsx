@@ -7,13 +7,21 @@ import Hambuger from "./Hambuger";
 import AppContext from "../context/AppContext";
 
 import HeaderSearch from "./HeaderSearch";
+
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
 const Header = () => {
   const [menuToggle, setMenuToggle] = useState(false);
 
   const router = useRouter();
   const { pathname } = router;
-  const { theme, connectWallet, currentAccount, disconnectWallet } =
-    useContext(AppContext);
+  const {
+    theme,
+    connectWallet,
+    currentAccount,
+    disconnectWallet,
+    changeTheme,
+  } = useContext(AppContext);
 
   return (
     <StyledHeader menuToggle={menuToggle} theme_={theme}>
@@ -43,14 +51,24 @@ const Header = () => {
         <HeaderSearch />
       </div>
       <motion.div className="right">
-        <button onClick={() => router.push("/list")}>List Item</button>
+        <button onClick={() => router.push("/create-nft")}>List Item</button>
         {currentAccount ? (
-          <button onClick={() => disconnectWallet()} className="secondary-btn">
-            Disconnect Wallet
-          </button>
+          <div className="link">
+            {" "}
+            <Link href={`/profile/${currentAccount}`}>Profile</Link>
+          </div>
         ) : (
           <button onClick={() => connectWallet()} className="secondary-btn">
             Connect Wallet
+          </button>
+        )}
+        {theme ? (
+          <button onClick={() => changeTheme()} className="theme-btn ">
+            <DarkModeIcon />
+          </button>
+        ) : (
+          <button onClick={() => changeTheme()} className="theme-btn ">
+            <Brightness7Icon />
           </button>
         )}
       </motion.div>
@@ -107,7 +125,7 @@ const StyledHeader = styled(motion.div)<{
   align-items: center;
   justify-content: center;
   padding: 1.5rem 4rem;
-  border-bottom: 2px solid ${({ theme_ }) => (theme_ ? " #bdc1d0" : " #eeeaea")};
+  border-bottom: 2px solid ${({ theme_ }) => (theme_ ? " #575555" : " #eeeaea")};
   @media (max-width: 900px) {
     justify-content: space-between;
     padding: 2.5rem 1.5rem;
@@ -142,16 +160,16 @@ const StyledHeader = styled(motion.div)<{
     @media (max-width: 900px) {
       display: none;
     }
-    .link {
-      a {
-        font-size: 1.2rem;
-        &:hover {
-          color: #0592ec;
-        }
-      }
-      .active {
+  }
+  .link {
+    a {
+      font-size: 1.2rem;
+      &:hover {
         color: #0592ec;
       }
+    }
+    .active {
+      color: #0592ec;
     }
   }
   .right {

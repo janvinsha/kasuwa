@@ -25,19 +25,22 @@ button{
   border:none;
   border-radius:2rem;
   border:2px solid #0592ec;
-  padding:0.4rem 1rem;
+  padding:0.4rem 1.4rem;
   font-size:1.2rem;
 
 }
 .theme-btn{
-    padding:0.1rem 0.5rem;
+    background:none;
+    border:none;
+    color:${({ theme }) => (theme ? "white" : "black")};
+    padding:0rem 0rem
 }
 .secondary-btn{
     cursor:pointer;
   background:inherit;
   border:2px solid #0592ec;
   border-radius:0.4rem;
-padding:0.4rem 1rem;
+padding:0.4rem 1.4rem;
   font-size:1.2rem;
   color:${({ theme }) => (theme ? "white" : "black")};
   display:flex;
@@ -51,7 +54,7 @@ padding:0.4rem 1rem;
   background:none;
   gap:0.5rem;
   border:2px solid #0592ec;
-padding:0.4rem 1rem;
+padding:0.4rem 1.4rem;
   border-radius:0.4rem;
   color:${({ theme }) => (theme ? "white" : "black")};
     img{  

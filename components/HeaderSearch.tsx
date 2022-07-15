@@ -41,7 +41,7 @@ const StyledHeaderSearch = styled.div<{ theme_: boolean }>`
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    border: 2px solid ${({ theme_ }) => (theme_ ? " #bdc1d0" : " #eeeaea")};
+    border: 2px solid ${({ theme_ }) => (theme_ ? " #575555" : " #eeeaea")};
 
     .icon {
       color: #bdc1d0;
