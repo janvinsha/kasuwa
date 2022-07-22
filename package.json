@@ -29,6 +29,7 @@
     "nft.storage": "^6.2.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-indiana-drag-scroll": "^2.2.0",
     "react-lottie": "^1.2.3",
     "styled-components": "^5.3.5",
     "underscore": "^1.13.4",

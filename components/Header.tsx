@@ -12,14 +12,14 @@ import DarkModeIcon from "@mui/icons-material/DarkMode";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
 const Header = () => {
   const [menuToggle, setMenuToggle] = useState(false);
-
+  const [userProfile, setUserProfile] = useState([]);
   const router = useRouter();
   const { pathname } = router;
   const {
     theme,
     connectWallet,
     currentAccount,
-    disconnectWallet,
+
     changeTheme,
   } = useContext(AppContext);
 
@@ -27,10 +27,10 @@ const Header = () => {
     <StyledHeader menuToggle={menuToggle} theme_={theme}>
       <motion.div className="left">
         <Link href="/">
-          <h3>
-            <img src="/images/blue-bg.png" alt="img" />
-            Kasuwa
-          </h3>
+          <span>
+            <img src="/images/logo.png" alt="img" />
+            <h3>Kasuwa</h3>
+          </span>
         </Link>
       </motion.div>
       <div className="middle">
@@ -51,10 +51,9 @@ const Header = () => {
         <HeaderSearch />
       </div>
       <motion.div className="right">
-        <button onClick={() => router.push("/create-nft")}>List Item</button>
+        <button onClick={() => router.push("/create-nft")}>Create Nft</button>
         {currentAccount ? (
           <div className="link">
-            {" "}
             <Link href={`/profile/${currentAccount}`}>Profile</Link>
           </div>
         ) : (
@@ -136,17 +135,20 @@ const StyledHeader = styled(motion.div)<{
       width: auto;
       z-index: 3;
     }
-    a {
+    span {
+      cursor: pointer;
       display: flex;
       gap: 0.5rem;
       align-items: center;
-    }
-    img {
-      width: 2.3rem;
-    }
-    h3 {
-      font-weight: bold;
-      font-size: 1.4rem;
+      img {
+        width: 2.3rem;
+        height: 2.3rem;
+        object-fit: cover;
+      }
+      h3 {
+        font-weight: bold;
+        font-size: 1.4rem;
+      }
     }
   }
   .middle {

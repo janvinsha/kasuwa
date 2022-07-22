@@ -7,7 +7,12 @@ import AppContext from "../context/AppContext";
 
 import defaultPicture from "../../public/images/swing.jpeg";
 import { Router } from "next/router";
-const UserNftCard = ({ nft }) => {
+interface Props {
+  nft: any;
+  clickNft: (e: any) => void;
+}
+
+const UserNftCard = ({ nft, clickNft }: Props) => {
   const { theme, currentAccount } = useContext(AppContext);
 
   return (
@@ -33,7 +38,9 @@ const UserNftCard = ({ nft }) => {
         </span>
 
         <span className="nft_btn">
-          <button className="secondary-btn">List Nft</button>
+          <button className="secondary-btn" onClick={clickNft}>
+            List Nft
+          </button>
         </span>
       </div>
     </StyledUserNftCard>

@@ -25,6 +25,7 @@ const Textarea = ({
   id,
   optional,
   theme,
+  ...rest
 }: Props) => {
   return (
     <StyledInput theme_={theme}>
@@ -56,6 +57,7 @@ const Textarea = ({
             className={`input ${className && className}`}
             id={id}
             rows={6}
+            {...rest}
           ></textarea>
         </div>
       </div>

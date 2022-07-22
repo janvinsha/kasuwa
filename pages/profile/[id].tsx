@@ -6,28 +6,36 @@ import styled from "styled-components";
 
 import AppContext from "../../context/AppContext";
 
-import { UserNftCard, NftCard } from "../../components";
+import {
+  UserNftCard,
+  NftCard,
+  EditProfileModal,
+  CreateListingModal,
+} from "../../components";
 
 export default function Profile() {
+  // Import private key & instantiate wallet
+
   const router = useRouter();
   const { pathname } = router;
-  const { id: handle } = router.query;
+  const { id: foundAddress } = router.query;
 
   const [activeTab, setActiveTab] = useState("Your Nfts");
-  const { currentAccount, theme, disconnectWallet } = useContext(AppContext);
+  const { currentAccount, theme, disconnectWallet, createTable, getProfile } =
+    useContext(AppContext);
   const [userNfts, setUserNfts] = useState([]);
+  const [clickedNft, setClickedNft] = useState();
+  const [createListingModal, setCreateListingModal] = useState(false);
+  const [profileModal, setProfileModal] = useState(false);
+  const [foundUser, setFoundUser] = useState([]);
   let tabs = ["Your Nfts", "Listed Items"];
 
-  let foundUser = {
-    name: "Big Boy",
-    bio: "I AM THE ONE THE ONE THE ONE THE ONE THE ONE THE ONE THE ONE",
-  };
   const nfts = [{}, {}];
   const getProfileNfts = async () => {
     let chainId = 137;
     if (currentAccount) {
       const { data } = await axios.get(
-        `https://api.covalenthq.com/v1/${chainId}/address/${currentAccount}/balances_v2/?quote-currency=USD&format=JSON&nft=true&no-nft-fetch=false&key=ckey_a2341ac051bd419d815522ed217`
+        `https://api.covalenthq.com/v1/${137}/address/${currentAccount}/balances_v2/?quote-currency=USD&format=JSON&nft=true&no-nft-fetch=false&key=ckey_a2341ac051bd419d815522ed217`
       );
       console.log("THIS IS THE NFTS OF THE USER", data?.data?.items, chainId);
 
@@ -42,11 +50,24 @@ export default function Profile() {
       setUserNfts(tempArray);
     }
   };
+
   useEffect(() => {
     getProfileNfts();
-  }, [handle, currentAccount]);
+    getUserProfile();
+  }, [foundAddress, currentAccount]);
 
-  https: return (
+  const getUserProfile = async () => {
+    if (currentAccount) {
+      const res = await getProfile(`${foundAddress}`);
+      console.log("GET PRFOILE RESPOMSE HERE", res);
+      setFoundUser(res?.[0]);
+    }
+  };
+  const clickNft = (nft) => {
+    setClickedNft(nft);
+  };
+  console.log("THIS IS THE FOUND USER", foundUser);
+  return (
     <StyledProfile theme_={theme}>
       {!true ? (
         <></>
@@ -55,24 +76,32 @@ export default function Profile() {
           <div className="profile">
             <div className="photo-cont">
               <img
-                src={foundUser?.banner || "/images/swing.jpeg"}
+                src={
+                  foundUser?.length > 2
+                    ? `${foundUser?.[4]}`
+                    : "/images/swing.jpeg"
+                }
                 className="cover"
                 alt="img"
               />
               <div className="dp">
                 <img
-                  src={foundUser?.dp || "/images/swing.jpeg"}
+                  src={
+                    foundUser?.length > 2
+                      ? `${foundUser?.[3]}`
+                      : "/images/swing.jpeg"
+                  }
                   className="cover"
                   alt="img"
                   className="img"
                 />
                 <span className="bio">
-                  <h3>{foundUser?.name}</h3>
-                  <p>{foundUser?.bio}</p>
+                  <h3>{foundUser?.length > 2 ? foundUser?.[2] : "Comrade"}</h3>
+                  <p>{foundUser?.[1]}</p>
                 </span>
               </div>
               <div className="dpBtns">
-                {currentAccount && currentAccount == handle && (
+                {currentAccount && currentAccount == foundAddress && (
                   <button
                     className="secondary-btn"
                     onClick={() => disconnectWallet()}
@@ -80,7 +109,7 @@ export default function Profile() {
                     Disconnect
                   </button>
                 )}
-                {currentAccount && currentAccount == handle && (
+                {currentAccount && currentAccount == foundAddress && (
                   <button
                     className="secondary-btn"
                     onClick={() => setProfileModal(true)}
@@ -92,7 +121,7 @@ export default function Profile() {
             </div>
             <div className="nfts_section">
               <span className="tabs">
-                {currentAccount == handle && (
+                {currentAccount == foundAddress && (
                   <span
                     className={`tab ${activeTab === "Your Nfts" && "active"}`}
                     key="index"
@@ -113,11 +142,30 @@ export default function Profile() {
               </span>
               <div className="cards">
                 {activeTab === "Your Nfts"
-                  ? userNfts.map((nft, i) => <UserNftCard nft={nft} key={i} />)
+                  ? userNfts.map((nft, i) => (
+                      <UserNftCard
+                        nft={nft}
+                        key={i}
+                        clickNft={() => {
+                          clickNft(nft);
+                          setCreateListingModal(true);
+                        }}
+                      />
+                    ))
                   : nfts.map((nft, i) => <NftCard nft={nft} key={i} />)}
               </div>
             </div>
           </div>
+          <CreateListingModal
+            show={createListingModal}
+            onClose={() => setCreateListingModal(false)}
+            nft={clickedNft}
+          />
+          <EditProfileModal
+            show={profileModal}
+            onClose={() => setProfileModal(false)}
+            user={foundUser}
+          />
         </>
       )}
     </StyledProfile>

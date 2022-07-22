@@ -110,7 +110,7 @@ const CreateListing = () => {
               </>
             ) : (
               <>
-                <h3>PNG, JPEG, GIF, WEBP</h3>
+                <h3>PNG, JPEG, GIF, WEBP, MP4</h3>
                 <h3>Max 100mb</h3>
                 <PhotoIcon className="icon" />
 

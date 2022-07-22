@@ -11,3 +11,5 @@ export { default as Input } from "./Input";
 export { default as Textarea } from "./Textarea";
 export { default as UserNftCard } from "./UserNftCard";
 export { default as NftCard } from "./NftCard";
+export { default as EditProfileModal } from "./EditProfileModal";
+export { default as CreateListingModal } from "./CreateListingModal";

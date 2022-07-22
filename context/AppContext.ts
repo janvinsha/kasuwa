@@ -7,6 +7,9 @@ interface GlobalContent {
   disconnectWallet?: (e: boolean) => void;
   currentAccount?: string;
   chainId?: string;
+  createSeaportOrder?: (e: any) => void;
+  createTable?: (e: any) => void;
+  updateProfile?: (e: any) => void;
 }
 const AppContext = React.createContext<GlobalContent>({});
 
