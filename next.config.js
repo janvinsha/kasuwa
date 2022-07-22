@@ -5,4 +5,7 @@ module.exports = {
   images: {
     domains: ["etherscan.io", "ipfs.io"],
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
