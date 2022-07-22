@@ -123,7 +123,7 @@ const StyledHeader = styled(motion.div)<{
   flex-flow: row wrap;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem 4rem;
+  padding: 1.2rem 4rem;
   border-bottom: 2px solid ${({ theme_ }) => (theme_ ? " #575555" : " #eeeaea")};
   @media (max-width: 900px) {
     justify-content: space-between;
@@ -152,7 +152,7 @@ const StyledHeader = styled(motion.div)<{
     }
   }
   .middle {
-    width: 50%;
+    width: 45%;
     margin-left: auto;
     margin-right: auto;
     display: flex;
@@ -175,7 +175,7 @@ const StyledHeader = styled(motion.div)<{
     }
   }
   .right {
-    width: 30%;
+    width: 35%;
     display: flex;
     justify-content: flex-end;
     align-items: center;
