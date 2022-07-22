@@ -14,6 +14,7 @@ import AppContext from "../context/AppContext";
 
 import PhotoIcon from "@mui/icons-material/Photo";
 
+import notify from "../hooks/notification";
 const client = create({
   host: "ipfs.infura.io",
   port: 5001,
@@ -24,6 +25,7 @@ const CreateListing = () => {
   const [category, setCategory] = useState("");
   const [collection, setCollection] = useState("");
   const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
   const [price, setPrice] = useState(0);
   const [hashtags, setHashtags] = useState([]);
   const hiddenDpInput = React.useRef(null);
@@ -74,30 +76,38 @@ const CreateListing = () => {
       const config = {
         headers: {
           "Content-Type": "application/json",
-          Authorization: "0a0a1461-a071-4db5-b1dd-0ae4c8e45122",
+          Authorization: "e7da3e89-68a0-4310-8738-978ff7a8352c",
         },
       };
+      setLoading(true);
       const response = await axios.post(
         "https://api.nftport.xyz/v0/mints/customizable",
         {
-          chain: "rinkeby",
-          contract_address: "0x56D85382E54CE5A4432861Aef0a9ca1357Fe9F14",
+          chain: "polygon",
+          contract_address: "0x0F2b3C8A55bA4074D23F839a17307330D9D0788B",
           metadata_uri: `https://ipfs.infura.io/ipfs/${result.path}`,
           mint_to_address: `${currentAccount}`,
         },
         config
       );
-
+      setLoading(false);
+      notify({ title: "Nft created successfully", type: "success" });
       console.log(response, "RESPONSE ");
-      return data;
+
+      return response;
     } catch (error) {
       console.log(error);
+      setLoading(false);
+      notify({
+        title: "There was an error trying to create an NFT",
+        type: "error",
+      });
     }
   };
 
   return (
     <StyledCreateListing theme_={theme}>
-      {/* <Loader visible={creatingItem} /> */}
+      <Loader visible={loading} />
       <motion.div className="page_header">
         <h2 className="page_title text-gradient">Create new Item</h2>
       </motion.div>

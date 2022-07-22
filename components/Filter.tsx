@@ -145,35 +145,5 @@ const StyledFilter = styled(motion.div)<{ theme_: boolean }>`
       -webkit-text-fill-color: #6d6d6d;
     }
   }
-  .tabs {
-    display: flex;
-    flex-flow: row wrap;
-    gap: 1rem;
-    width: 100%;
-    .tab {
-      padding: 0rem 1.2rem;
-      padding-top: 0.5rem;
-      font-size: 1.2rem;
-      cursor: pointer;
-      background: ${({ theme_ }) => (theme_ ? "#24242b" : "#f2f2f2")};
-      -moz-box-shadow: 0 0 4.5px #ccc;
-      -webkit-box-shadow: 0 0 4.5px #ccc;
-      box-shadow: 0 0 4.5px #ccc;
-      border-radius: 2rem;
-      &:hover {
-        color: gray;
-      }
-      .line {
-        margin-top: 0.5rem;
-        padding: 2px;
-        background: inherit;
-        border-radius: 3rem 3rem 0px 0px;
-      }
-      &.active {
-        color: ${({ theme_ }) => (theme_ ? "black" : "white")};
-        background: ${({ theme_ }) => (theme_ ? "#ffffff" : "#16161A")};
-      }
-    }
-  }
 `;
 export default Filter;

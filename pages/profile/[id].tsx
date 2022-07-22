@@ -21,8 +21,14 @@ export default function Profile() {
   const { id: foundAddress } = router.query;
 
   const [activeTab, setActiveTab] = useState("Your Nfts");
-  const { currentAccount, theme, disconnectWallet, createTable, getProfile } =
-    useContext(AppContext);
+  const {
+    currentAccount,
+    theme,
+    disconnectWallet,
+    createTable,
+    getProfile,
+    chainId,
+  } = useContext(AppContext);
   const [userNfts, setUserNfts] = useState([]);
   const [clickedNft, setClickedNft] = useState();
   const [createListingModal, setCreateListingModal] = useState(false);
@@ -32,7 +38,7 @@ export default function Profile() {
 
   const nfts = [{}, {}];
   const getProfileNfts = async () => {
-    let chainId = 137;
+    // let chainId = 137;
     if (currentAccount) {
       const { data } = await axios.get(
         `https://api.covalenthq.com/v1/${137}/address/${currentAccount}/balances_v2/?quote-currency=USD&format=JSON&nft=true&no-nft-fetch=false&key=ckey_a2341ac051bd419d815522ed217`
