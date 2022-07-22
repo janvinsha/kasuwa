@@ -97,9 +97,8 @@ export default function Profile() {
                       ? `${foundUser?.[3]}`
                       : "/images/swing.jpeg"
                   }
-                  className="cover"
+                  className="cover img"
                   alt="img"
-                  className="img"
                 />
                 <span className="bio">
                   <h3>{foundUser?.length > 2 ? foundUser?.[2] : "Comrade"}</h3>
