@@ -38,8 +38,8 @@ export default function Listings() {
         </div>
 
         <div className="cards">
-          {nfts.map((nft) => (
-            <NftCard nft={nft} />
+          {nfts.map((nft, i) => (
+            <NftCard nft={nft} key={i} />
           ))}
         </div>
       </div>

@@ -99,7 +99,7 @@ export default function ListingDetails() {
               <ScrollContainer className="historys">
                 {history &&
                   history?.map((transaction, index) => (
-                    <div className="history">
+                    <div className="history" key={index}>
                       <span className="title">
                         Transaction {history?.length - index}
                       </span>

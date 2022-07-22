@@ -14,8 +14,8 @@ const NftCard = ({ nft }) => {
     <StyledNftCard theme_={theme} onClick={() => router.push("/listings/1")}>
       <h2>Offer</h2>
       <ScrollContainer className="scroll-container" horizontal>
-        {offerItems.map((offerItem) => (
-          <div className="offer">
+        {offerItems.map((offerItem, i) => (
+          <div className="offer" key={i}>
             {offerItem?.img && <img src="/images/swing.jpeg" alt="ig" />}
             <h3>1 Bay</h3>
           </div>
@@ -27,8 +27,8 @@ const NftCard = ({ nft }) => {
       </span>
 
       <ScrollContainer className="scroll-container" horizontal={true}>
-        {considerationItems.map((consideration) => (
-          <div className="consideration">
+        {considerationItems.map((consideration, i) => (
+          <div className="consideration" key={i}>
             {consideration?.img && <img src="/images/swing.jpeg" alt="ig" />}
             <h3>1 Bay</h3>
           </div>
