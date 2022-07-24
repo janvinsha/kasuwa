@@ -64,7 +64,7 @@ const NftCard = ({ listing }) => {
             <h3>
               {considerationItem?.name
                 ? considerationItem?.name
-                : `WEth ${formatEther(considerationItem?.amount)}`}
+                : `WEth ${formatEther(considerationItem?.amount || "200")}`}
             </h3>
           </div>
         ))}

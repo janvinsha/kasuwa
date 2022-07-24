@@ -42,10 +42,10 @@ export default function Profile() {
   const nfts = [{}, {}];
   const getProfileNfts = async () => {
     // let chainId = 137;
-
+    alert(chainId);
     if (currentAccount) {
       const { data } = await axios.get(
-        `https://api.covalenthq.com/v1/${80001}/address/${currentAccount}/balances_v2/?quote-currency=USD&format=JSON&nft=true&no-nft-fetch=false&key=ckey_a2341ac051bd419d815522ed217`
+        `https://api.covalenthq.com/v1/${chainId}/address/${currentAccount}/balances_v2/?quote-currency=USD&format=JSON&nft=true&no-nft-fetch=false&key=ckey_a2341ac051bd419d815522ed217`
       );
       console.log("THIS IS THE NFTS OF THE USER", data?.data?.items, chainId);
 
