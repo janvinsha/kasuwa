@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  CreateOrderInput,
-  OrderWithCounter,
-} from "@opensea/seaport-js/lib/types";
+import { CreateOrderInput } from "@opensea/seaport-js/lib/types";
 import { Seaport } from "@opensea/seaport-js";
-import { ItemType } from "@opensea/seaport-js/lib/constants";
 
 import { ethers } from "ethers";
 import axios from "axios";
@@ -22,7 +18,9 @@ import { GlobalStyle } from "../components";
 import { OfferItem, ConsiderationItem } from "types/tokenTypes";
 import { Wallet, providers } from "ethers";
 import { connect } from "@tableland/sdk";
-import { write } from "fs";
+
+import { v4 as uuid } from "uuid";
+import notify from "../hooks/notification";
 
 interface Props {
   children: any;
@@ -58,7 +56,7 @@ const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
 const tblWallet = new Wallet(privateKey);
 const tblProvider = new providers.AlchemyProvider("maticmum", alchemyKey);
 const usersTable = "users_80001_361";
-
+const listingsTable = "orderListings_80001_665";
 const Layout = ({ children }: Props) => {
   console.log(
     process.env.NEXT_PUBLIC_WALLET_PRIVATE_KEY,
@@ -147,26 +145,75 @@ const Layout = ({ children }: Props) => {
 
   interface SeaportOrderProps {
     currentAccount: string;
+    orderParams: any;
+    offerItems: any;
+    considerationItems: any;
   }
-  const createSeaportOrder = async ({ currentAccount }: SeaportOrderProps) => {
-    if (currentAccount) {
+  const createSeaportOrder = async ({
+    offerItems,
+    considerationItems,
+  }: SeaportOrderProps) => {
+    try {
+      if (currentAccount) {
+        let wallet = await web3Modal.connect();
+        const tProvider = new ethers.providers.Web3Provider(wallet);
+        const seaport = new Seaport(tProvider);
+
+        const orderParams: CreateOrderInput = {
+          offer: offerItems?.map((item) => item?.inputItem),
+          consideration: considerationItems?.map((item) => item?.inputItem),
+          endTime: undefined,
+        };
+
+        const { executeAllActions } = await seaport?.createOrder(
+          orderParams,
+          currentAccount
+        );
+
+        const res = await executeAllActions();
+
+        console.log("order: ", JSON.stringify(res));
+        const unique_id = uuid();
+        const orderToSave: OrderWithMetadata = {
+          id: unique_id.toString(),
+          orderJson: JSON.stringify(res),
+          offers: JSON.stringify(offerItems),
+          considerations: JSON.stringify(considerationItems),
+        };
+        console.log("HERE IS THE ORDER TO SAVE", orderToSave);
+        createListings(orderToSave);
+
+        notify({ title: "Order created successfully", type: "success" });
+      }
+    } catch (e) {
+      notify({ title: "Error creating order", type: "error" });
+      console.log(e);
+    }
+  };
+  const fulfillSeaportOrder = async ({
+    offerItems,
+    considerationItems,
+  }: SeaportOrderProps) => {
+    try {
       let wallet = await web3Modal.connect();
       const tProvider = new ethers.providers.Web3Provider(wallet);
       const seaport = new Seaport(tProvider);
+      let transactionHash: string;
       const orderParams: CreateOrderInput = {
-        offer: offerItems.map((item) => item.inputItem),
-        consideration: considerationItems.map((item) => item.inputItem),
+        offer: offerItems?.map((item) => item?.inputItem),
+        consideration: considerationItems?.map((item) => item?.inputItem),
       };
-
-      const { executeAllActions } = await seaport?.createOrder(
-        orderParams,
-        currentAccount
-      );
-
-      const res = await executeAllActions();
-      setOrder(res);
-      console.log("order: ", JSON.stringify(res));
-      await saveOrder(res);
+      const { executeAllActions } = await seaport.fulfillOrder({
+        order: orderParams,
+        accountAddress: currentAccount,
+      });
+      const transaction = await executeAllActions();
+      transactionHash = transaction.hash;
+      notify({ title: "Order fulfilled successfully", type: "success" });
+      return transactionHash;
+    } catch (err) {
+      console.log(err);
+      notify({ title: "Error fulfilling order", type: "error" });
     }
   };
 
@@ -212,9 +259,42 @@ const Layout = ({ children }: Props) => {
     }
   };
 
-  const getListings = async () => {};
-  const getListing = async () => {};
-  const createListings = async () => {};
+  const getListings = async () => {
+    try {
+      const signer = tblWallet.connect(tblProvider);
+      const tbl = await connect({ signer });
+      const { rows } = await tbl.read(`SELECT * FROM ${listingsTable}`);
+      console.log(rows);
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const getListing = async (id) => {
+    try {
+      const signer = tblWallet.connect(tblProvider);
+      const tbl = await connect({ signer });
+      const { rows } = await tbl.read(
+        `SELECT * FROM ${listingsTable} WHERE id = '${id}'`
+      );
+      console.log(rows);
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const createListings = async (listing) => {
+    try {
+      const signer = tblWallet.connect(tblProvider);
+      const tbl = await connect({ signer });
+      const writeTx = await tbl.write(
+        `INSERT INTO ${listingsTable} VALUES ('${listing.id}', '${listing.orderJson}', '${listing.offers}','${listing.considerations}')`
+      );
+      console.log(writeTx);
+    } catch (err) {
+      console.log(err);
+    }
+  };
   const createTable = async () => {
     try {
       console.log("CREATING TABLE ..........");
@@ -222,9 +302,13 @@ const Layout = ({ children }: Props) => {
       const tbl = await connect({ signer });
       console.log(tbl, "THIS IS THE TBL");
       const { name, txnHash } = await tbl.create(
-        `id text,bio text, handle text,dp text, banner text, primary key (id)`, // Table schema definition
-        `users` // Optional prefix; used to define a human-readable string
+        `id text, orderJson text, offers text,considerations text,primary key (id)`, // Table schema definition
+        `orderListings` // Optional prefix; used to define a human-readable string
       );
+      // const { name, txnHash } = await tbl.create(
+      //   `id text,bio text, handle text,dp text, banner text, primary key (id)`, // Table schema definition
+      //   `users` // Optional prefix; used to define a human-readable string
+      // );
 
       console.log(name, txnHash, "HERE IS THE RESPONSE");
     } catch (error) {
@@ -245,6 +329,9 @@ const Layout = ({ children }: Props) => {
           createTable,
           getProfile,
           updateProfile,
+          getListings,
+          getListing,
+          fulfillSeaportOrder,
         }}
       >
         <GlobalStyle theme={theme} />
@@ -256,150 +343,3 @@ const Layout = ({ children }: Props) => {
 };
 const StyledLayout = styled(motion.div)``;
 export default Layout;
-
-const dummyData = [
-  {
-    inputItem: {
-      itemType: ItemType.ERC721,
-      token: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-      identifier: 582,
-    },
-    name: "Azuki #582",
-    image_url:
-      "https://gateway.pinata.cloud/ipfs/QmfDVMnhvkULBUszfb8nVq6uRRPzafVymzJqUsqqSAH4DQ/1.png",
-    token_id: "582",
-    address: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-    collectionName: "Azuki",
-    symbol: "AZUKI",
-  },
-  {
-    inputItem: {
-      itemType: ItemType.ERC721,
-      token: "0xfc3e0d0c54a7b7ea9c5bb976a46dcdbdade7cd3e",
-      identifier: 2294,
-    },
-    name: "Punk #2294",
-    image_url:
-      "https://gateway.pinata.cloud/ipfs/QmfDVMnhvkULBUszfb8nVq6uRRPzafVymzJqUsqqSAH4DQ/10.png",
-    token_id: "326",
-    address: "0xfc3e0d0c54a7b7ea9c5bb976a46dcdbdade7cd3e",
-    collectionName: "CryptoPunks",
-    symbol: "PUNK",
-  },
-  {
-    inputItem: {
-      itemType: ItemType.ERC721,
-      token: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-      identifier: 68,
-    },
-    name: "Doodle #68",
-    image_url:
-      "https://gateway.pinata.cloud/ipfs/QmfDVMnhvkULBUszfb8nVq6uRRPzafVymzJqUsqqSAH4DQ/2.png",
-    token_id: "68",
-    address: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-    collectionName: "Doodles",
-    symbol: "DOODLE",
-  },
-  {
-    inputItem: {
-      itemType: ItemType.ERC721,
-      token: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-      identifier: 1478,
-    },
-    name: "MAYC #1478",
-    image_url:
-      "https://gateway.pinata.cloud/ipfs/QmfDVMnhvkULBUszfb8nVq6uRRPzafVymzJqUsqqSAH4DQ/21.png",
-    token_id: "1478",
-    address: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-    collectionName: "Mutant Ape Yacht Club",
-    symbol: "MAYC",
-  },
-  {
-    inputItem: {
-      itemType: ItemType.ERC721,
-      token: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-      identifier: 2938,
-    },
-    name: "Azuki #2938",
-    image_url:
-      "https://gateway.pinata.cloud/ipfs/QmfDVMnhvkULBUszfb8nVq6uRRPzafVymzJqUsqqSAH4DQ/8.jpg",
-    token_id: "2938",
-    address: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-    collectionName: "Azuki",
-    symbol: "AZUKI",
-  },
-
-  {
-    inputItem: {
-      itemType: ItemType.ERC721,
-      token: "0xfc3e0d0c54a7b7ea9c5bb976a46dcdbdade7cd3e",
-      identifier: 24,
-    },
-    name: "Punk #24",
-    image_url:
-      "https://gateway.pinata.cloud/ipfs/QmfDVMnhvkULBUszfb8nVq6uRRPzafVymzJqUsqqSAH4DQ/9.png",
-    token_id: "24",
-    address: "0xfc3e0d0c54a7b7ea9c5bb976a46dcdbdade7cd3e",
-    collectionName: "CryptoPunks",
-    symbol: "PUNK",
-  },
-
-  {
-    inputItem: {
-      itemType: ItemType.ERC721,
-      token: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-      identifier: 8482,
-    },
-    name: "Doodle #8482",
-    image_url:
-      "https://gateway.pinata.cloud/ipfs/QmfDVMnhvkULBUszfb8nVq6uRRPzafVymzJqUsqqSAH4DQ/7.png",
-    token_id: "8482",
-    address: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-    collectionName: "Doodles",
-    symbol: "DOODLE",
-  },
-
-  {
-    inputItem: {
-      itemType: ItemType.ERC721,
-      token: "0xfc3e0d0c54a7b7ea9c5bb976a46dcdbdade7cd3e",
-      identifier: 3859,
-    },
-    name: "Punk #3859",
-    image_url:
-      "https://gateway.pinata.cloud/ipfs/QmfDVMnhvkULBUszfb8nVq6uRRPzafVymzJqUsqqSAH4DQ/22.png",
-    token_id: "3859",
-    address: "0xfc3e0d0c54a7b7ea9c5bb976a46dcdbdade7cd3e",
-    collectionName: "CryptoPunks",
-    symbol: "PUNK",
-  },
-
-  {
-    inputItem: {
-      itemType: ItemType.ERC721,
-      token: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-      identifier: 13,
-    },
-    name: "Azuki #13",
-    image_url:
-      "https://gateway.pinata.cloud/ipfs/QmfDVMnhvkULBUszfb8nVq6uRRPzafVymzJqUsqqSAH4DQ/17.jpg",
-    token_id: "13",
-    address: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-    collectionName: "Azuki",
-    symbol: "AZUKI",
-  },
-  {
-    inputItem: {
-      itemType: ItemType.ERC721,
-      token: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-      identifier: 2084,
-    },
-    name: "Doodles #2084",
-    image_url:
-      "https://gateway.pinata.cloud/ipfs/QmfDVMnhvkULBUszfb8nVq6uRRPzafVymzJqUsqqSAH4DQ/5.png",
-    token_id: "2084",
-    address: "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
-    collectionName: "Doodles",
-    symbol: "DOODLE",
-  },
-];

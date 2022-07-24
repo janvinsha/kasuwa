@@ -10,7 +10,7 @@ import { Input, Textarea, Loader } from "./index";
 
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
-
+import notify from "../hooks/notification";
 let API_TOKEN =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDM0MTBFMThhZUMzOGY4M2UyNTMxMzA4QmQyN0QyM0I3MjllNTJDNDUiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0OTQzNjM4OTkyNiwibmFtZSI6IkRBTyJ9.eWlB3VEJKUk3R1S6e5RFRhdONcgBkyCMjrWA9O5kdsA";
 const nftClient = new NFTStorage({ token: API_TOKEN });
@@ -20,7 +20,7 @@ const client = create({
   port: 5001,
   protocol: "https",
 });
-const EditProfileModal = ({ show, onClose, user }) => {
+const EditProfileModal = ({ show, onClose, user, setEditingProfile }) => {
   const {
     theme,
     accountDetails,
@@ -96,7 +96,7 @@ const EditProfileModal = ({ show, onClose, user }) => {
 
       console.log("IPFS UPLOAD FILE PHOTOURL", photoUrl);
       // console.log('FILES ARE HERE', files, dpFiles);
-
+      setEditingProfile(true);
       updateProfile({
         id: `${currentAccount}`,
         banner:
@@ -110,10 +110,14 @@ const EditProfileModal = ({ show, onClose, user }) => {
         handle: name,
         bio,
       });
+      notify({ title: "Profile edited successfully", type: "success" });
+      setEditingProfile(false);
 
       // console.log('IPFS UPLOAD FILE URL', url);
     } catch (error) {
       console.log("Error uploading file: ", error);
+      setEditingProfile(false);
+      notify({ title: "Error while editing profile", type: "error" });
     }
   };
   const tabs = ["Edit Profile", "Change Profile picture"];

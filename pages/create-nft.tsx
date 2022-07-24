@@ -6,9 +6,9 @@ import { motion } from "framer-motion";
 import styled from "styled-components";
 
 import Input from "../components/Input";
-import Filter from "../components/Filter";
+
 import Textarea from "../components/Textarea";
-import TagInput from "../components/TagInput";
+
 import { Loader } from "../components";
 import AppContext from "../context/AppContext";
 

@@ -1,23 +1,49 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import AppContext from "../context/AppContext";
 import ScrollContainer from "react-indiana-drag-scroll";
-const NftCard = ({ nft }) => {
-  const { theme, currentAccount } = useContext(AppContext);
+
+import { parseEther, formatEther } from "ethers/lib/utils";
+
+const NftCard = ({ listing }) => {
+  const { theme, currentAccount, getProfile } = useContext(AppContext);
   const router = useRouter();
-  const offerItems = [, { img: "nn" }];
-  const considerationItems = [{}];
+  const offerItems = listing?.[2];
+  const considerationItems = listing?.[3];
+  const [foundUser, setFoundUser] = useState();
+  useEffect(() => {
+    getUserProfile();
+  }, []);
+  const getUserProfile = async () => {
+    if (currentAccount) {
+      const res = await getProfile(`${listing?.[1]?.parameters?.offerer}`);
+      console.log(
+        "GET PRFOILE RESPOMSE HERE NFT CARD...................",
+        res,
+        listing?.[1]?.parameters?.offerer
+      );
+      setFoundUser(res?.[0]);
+    }
+  };
   return (
-    <StyledNftCard theme_={theme} onClick={() => router.push("/listings/1")}>
+    <StyledNftCard
+      theme_={theme}
+      onClick={() => router.push(`/listings/${listing?.[0]}`)}
+    >
       <h2>Offer</h2>
       <ScrollContainer className="scroll-container" horizontal>
-        {offerItems.map((offerItem, i) => (
+        {offerItems?.map((offerItem: any, i) => (
           <div className="offer" key={i}>
-            {offerItem?.img && <img src="/images/swing.jpeg" alt="ig" />}
-            <h3>1 Bay</h3>
+            {offerItem?.image_url && (
+              <img
+                src={offerItem?.image_url || "/images/swing.jpeg"}
+                alt="ig"
+              />
+            )}
+            <h3>{offerItem?.name}</h3>
           </div>
         ))}
       </ScrollContainer>
@@ -27,10 +53,19 @@ const NftCard = ({ nft }) => {
       </span>
 
       <ScrollContainer className="scroll-container" horizontal={true}>
-        {considerationItems.map((consideration, i) => (
+        {considerationItems?.map((considerationItem: any, i) => (
           <div className="consideration" key={i}>
-            {consideration?.img && <img src="/images/swing.jpeg" alt="ig" />}
-            <h3>1 Bay</h3>
+            {considerationItem?.image_url && (
+              <img
+                src={considerationItem?.image_url || "/images/swing.jpeg"}
+                alt="ig"
+              />
+            )}
+            <h3>
+              {considerationItem?.name
+                ? considerationItem?.name
+                : `WEth ${formatEther(considerationItem?.amount)}`}
+            </h3>
           </div>
         ))}
       </ScrollContainer>
@@ -40,11 +75,15 @@ const NftCard = ({ nft }) => {
           <span className="nft_author">
             {" "}
             <img
-              src="/images/swing.jpeg"
+              src={
+                foundUser?.length > 2
+                  ? `${foundUser?.[4]}`
+                  : "/images/swing.jpeg"
+              }
               alt="img"
               className="nft_author_image"
             />
-            <p>Comrade</p>{" "}
+            <p>{foundUser?.length > 2 ? foundUser?.[2] : "Comrade"}</p>{" "}
           </span>{" "}
         </span>
       </div>

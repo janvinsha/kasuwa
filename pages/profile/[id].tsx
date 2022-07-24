@@ -11,6 +11,7 @@ import {
   NftCard,
   EditProfileModal,
   CreateListingModal,
+  Loader,
 } from "../../components";
 
 export default function Profile() {
@@ -19,8 +20,8 @@ export default function Profile() {
   const router = useRouter();
   const { pathname } = router;
   const { id: foundAddress } = router.query;
-
-  const [activeTab, setActiveTab] = useState("Your Nfts");
+  const [listings, setListings] = useState();
+  const [activeTab, setActiveTab] = useState("User Nfts");
   const {
     currentAccount,
     theme,
@@ -28,20 +29,23 @@ export default function Profile() {
     createTable,
     getProfile,
     chainId,
+    getListings,
   } = useContext(AppContext);
   const [userNfts, setUserNfts] = useState([]);
   const [clickedNft, setClickedNft] = useState();
   const [createListingModal, setCreateListingModal] = useState(false);
   const [profileModal, setProfileModal] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
   const [foundUser, setFoundUser] = useState([]);
-  let tabs = ["Your Nfts", "Listed Items"];
+  let tabs = ["User Nfts", "Listed Items"];
 
   const nfts = [{}, {}];
   const getProfileNfts = async () => {
     // let chainId = 137;
+
     if (currentAccount) {
       const { data } = await axios.get(
-        `https://api.covalenthq.com/v1/${137}/address/${currentAccount}/balances_v2/?quote-currency=USD&format=JSON&nft=true&no-nft-fetch=false&key=ckey_a2341ac051bd419d815522ed217`
+        `https://api.covalenthq.com/v1/${80001}/address/${currentAccount}/balances_v2/?quote-currency=USD&format=JSON&nft=true&no-nft-fetch=false&key=ckey_a2341ac051bd419d815522ed217`
       );
       console.log("THIS IS THE NFTS OF THE USER", data?.data?.items, chainId);
 
@@ -49,10 +53,21 @@ export default function Profile() {
       let tempArray = [];
       for (let x of nftsArray) {
         if (x.type == "nft") {
-          tempArray = [...tempArray, ...x?.nft_data];
+          let testArray = [...x?.nft_data].map((y) =>
+            Object.assign(
+              {
+                contract_name: x?.contract_name,
+                contract_ticker_symbol: x?.contract_ticker_symbol,
+                contract_address: x?.contract_address,
+              },
+              y
+            )
+          );
+          tempArray = [...tempArray, ...testArray];
         }
       }
       console.log("LETS SEE THE CONTENTS OF THE TEMP ARRAY", tempArray);
+
       setUserNfts(tempArray);
     }
   };
@@ -60,6 +75,7 @@ export default function Profile() {
   useEffect(() => {
     getProfileNfts();
     getUserProfile();
+    getData();
   }, [foundAddress, currentAccount]);
 
   const getUserProfile = async () => {
@@ -69,110 +85,118 @@ export default function Profile() {
       setFoundUser(res?.[0]);
     }
   };
+  const getData = async () => {
+    const tempListings = await getListings();
+    setListings(tempListings);
+    console.log("listings"), listings;
+  };
   const clickNft = (nft) => {
     setClickedNft(nft);
+    console.log("THIS IS THE CLICKED NFT", nft);
   };
   console.log("THIS IS THE FOUND USER", foundUser);
   return (
     <StyledProfile theme_={theme}>
-      {!true ? (
-        <></>
-      ) : (
-        <>
-          <div className="profile">
-            <div className="photo-cont">
+      <Loader visible={editingProfile} />
+      <>
+        <div className="profile">
+          <div className="photo-cont">
+            <img
+              src={
+                foundUser?.length > 2
+                  ? `${foundUser?.[4]}`
+                  : "/images/swing.jpeg"
+              }
+              className="cover"
+              alt="img"
+            />
+            <div className="dp">
               <img
                 src={
                   foundUser?.length > 2
-                    ? `${foundUser?.[4]}`
+                    ? `${foundUser?.[3]}`
                     : "/images/swing.jpeg"
                 }
-                className="cover"
+                className="cover img"
                 alt="img"
               />
-              <div className="dp">
-                <img
-                  src={
-                    foundUser?.length > 2
-                      ? `${foundUser?.[3]}`
-                      : "/images/swing.jpeg"
-                  }
-                  className="cover img"
-                  alt="img"
-                />
-                <span className="bio">
-                  <h3>{foundUser?.length > 2 ? foundUser?.[2] : "Comrade"}</h3>
-                  <p>{foundUser?.[1]}</p>
-                </span>
-              </div>
-              <div className="dpBtns">
-                {currentAccount && currentAccount == foundAddress && (
-                  <button
-                    className="secondary-btn"
-                    onClick={() => disconnectWallet()}
-                  >
-                    Disconnect
-                  </button>
-                )}
-                {currentAccount && currentAccount == foundAddress && (
-                  <button
-                    className="secondary-btn"
-                    onClick={() => setProfileModal(true)}
-                  >
-                    Edit Profile
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="nfts_section">
-              <span className="tabs">
-                {currentAccount == foundAddress && (
-                  <span
-                    className={`tab ${activeTab === "Your Nfts" && "active"}`}
-                    key="index"
-                    onClick={() => setActiveTab("Your Nfts")}
-                  >
-                    Your Nfts
-                    <div className="line"></div>
-                  </span>
-                )}
-                <span
-                  className={`tab ${activeTab === "Listed Items" && "active"}`}
-                  key="index"
-                  onClick={() => setActiveTab("Listed Items")}
-                >
-                  Listed Items
-                  <div className="line"></div>
-                </span>
+              <span className="bio">
+                <h3>{foundUser?.length > 2 ? foundUser?.[2] : "Comrade"}</h3>
+                <p>{foundUser?.[1]}</p>
               </span>
-              <div className="cards">
-                {activeTab === "Your Nfts"
-                  ? userNfts.map((nft, i) => (
-                      <UserNftCard
-                        nft={nft}
-                        key={i}
-                        clickNft={() => {
-                          clickNft(nft);
-                          setCreateListingModal(true);
-                        }}
-                      />
-                    ))
-                  : nfts.map((nft, i) => <NftCard nft={nft} key={i} />)}
-              </div>
+            </div>
+            <div className="dpBtns">
+              {currentAccount && currentAccount == foundAddress && (
+                <button
+                  className="secondary-btn"
+                  onClick={() => disconnectWallet()}
+                >
+                  Disconnect
+                </button>
+              )}
+              {currentAccount && currentAccount == foundAddress && (
+                <button
+                  className="secondary-btn"
+                  onClick={() => setProfileModal(true)}
+                >
+                  Edit Profile
+                </button>
+              )}
             </div>
           </div>
-          <CreateListingModal
-            show={createListingModal}
-            onClose={() => setCreateListingModal(false)}
-            nft={clickedNft}
-          />
-          <EditProfileModal
-            show={profileModal}
-            onClose={() => setProfileModal(false)}
-            user={foundUser}
-          />
-        </>
-      )}
+          <div className="nfts_section">
+            <span className="tabs">
+              {currentAccount == foundAddress && (
+                <span
+                  className={`tab ${activeTab === "User Nfts" && "active"}`}
+                  key="index"
+                  onClick={() => setActiveTab("User Nfts")}
+                >
+                  User Nfts
+                  <div className="line"></div>
+                </span>
+              )}
+              <span
+                className={`tab ${activeTab === "Listed Items" && "active"}`}
+                key="index"
+                onClick={() => setActiveTab("Listed Items")}
+              >
+                Listed Items
+                <div className="line"></div>
+              </span>
+            </span>
+            <div className="cards">
+              {activeTab === "User Nfts"
+                ? userNfts?.map((nft, i) => (
+                    <UserNftCard
+                      nft={nft}
+                      key={i}
+                      clickNft={() => {
+                        clickNft(nft);
+                        setCreateListingModal(true);
+                      }}
+                    />
+                  ))
+                : listings?.map((listing, i) => (
+                    <NftCard listing={listing} key={i} />
+                  ))}
+            </div>
+          </div>
+        </div>
+        <CreateListingModal
+          show={createListingModal}
+          onClose={() => setCreateListingModal(false)}
+          nft={clickedNft}
+          userNfts={userNfts}
+          clickedNft={clickedNft}
+        />
+        <EditProfileModal
+          show={profileModal}
+          onClose={() => setProfileModal(false)}
+          user={foundUser}
+          setEditingProfile={setEditingProfile}
+        />
+      </>
     </StyledProfile>
   );
 }

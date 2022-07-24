@@ -1,12 +1,10 @@
 import React, { useContext } from "react";
 
 import styled from "styled-components";
-import Link from "next/link";
+
 import { motion } from "framer-motion";
 import AppContext from "../context/AppContext";
 
-import defaultPicture from "../../public/images/swing.jpeg";
-import { Router } from "next/router";
 interface Props {
   nft: any;
   clickNft: (e: any) => void;
@@ -38,9 +36,11 @@ const UserNftCard = ({ nft, clickNft }: Props) => {
         </span>
 
         <span className="nft_btn">
-          <button className="secondary-btn" onClick={clickNft}>
-            List Nft
-          </button>
+          {nft?.owner == currentAccount?.toLowerCase() && (
+            <button className="secondary-btn" onClick={clickNft}>
+              List Nft
+            </button>
+          )}
         </span>
       </div>
     </StyledUserNftCard>

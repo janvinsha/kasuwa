@@ -1,21 +1,14 @@
 import { useState, useEffect, useContext } from "react";
 import * as React from "react";
-import Link from "next/link";
 import { useRouter } from "next/router";
-import axios from "axios";
-
-// import protons from 'protons';
-import protobuf from "protobufjs";
 
 import ScrollContainer from "react-indiana-drag-scroll";
 import { motion } from "framer-motion";
 import styled from "styled-components";
 
-import { NftCard } from "../../components";
+import { NftCard, Loader } from "../../components";
 import AppContext from "../../context/AppContext";
-
-import ShareIcon from "@mui/icons-material/Share";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import { formatEther } from "ethers/lib/utils";
 
 export default function ListingDetails() {
   const router = useRouter();
@@ -23,112 +16,115 @@ export default function ListingDetails() {
   const { id: nftId } = router.query;
 
   const [loading, setLoading] = useState(false);
-  const { theme, buyingNft, buyNft, currentAccount } = useContext(AppContext);
+  const {
+    theme,
+    buyingNft,
+    buyNft,
+    currentAccount,
+    getListing,
+    getProfile,
+    fulfillSeaportOrder,
+  } = useContext(AppContext);
   const [share, setShare] = useState(false);
   const [text, setText] = useState("");
   const tabs = ["Description", "History"];
   const [activeTab, setActiveTab] = useState("Description");
-  let comments = [];
-  let nft = { tokenId: 1 };
-  let COVALENT_KEY = "ckey_9ebee12fd55e4e05b33496e5c7e";
 
-  let [nftData, setNftData] = useState();
-  let data;
-  const getData = async () => {
-    try {
-      data = await axios.get(
-        `https://api.covalenthq.com/v1/80001/tokens/0xBaFDdDCd96e18Bedd401f781c4020E8677898828/nft_transactions/${nft.tokenId}/?quote-currency=USD&format=JSON&key=ckey_9ebee12fd55e4e05b33496e5c7e`
-      );
-      setNftData(data);
-      return data;
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+  const [listing, setListing] = useState(dummyData);
+  const offerItems = listing?.[2];
+  const considerationItems = listing?.[3];
   useEffect(() => {
     getData();
+    getUserProfile();
   }, []);
 
-  let history = nftData?.data?.data?.items[0]?.nft_transactions;
+  const getData = async () => {
+    const tempListing = await getListing(nftId);
+    if (tempListing) {
+      // setListing(tempListing);
+    }
+    console.log("listings"), listing;
+  };
+  const [foundUser, setFoundUser] = useState();
 
-  let userProfile = {};
+  const getUserProfile = async () => {
+    if (currentAccount) {
+      const res = await getProfile(`${listing?.[1]?.parameters?.offerer}`);
+      console.log("GET PRFOILE RESPOMSE HERE", res);
+      setFoundUser(res?.[0]);
+    }
+  };
+  const fulfillOrder = async () => {
+    setLoading(true);
+    fulfillSeaportOrder({
+      considerationItems,
+      offerItems,
+    });
+    setLoading(false);
+  };
   return (
     <StyledListingDetails theme_={theme}>
-      {/* <Loader visible={buyingNft} /> */}
-      <div className="desc">
-        <div className="left">
-          <img src={"/images/swing.jpeg"} alt="img" />
-        </div>
+      <Loader visible={loading} />
+      <div className="listing">
+        <h2>Offer</h2>
+        <ScrollContainer className="scroll-container" horizontal>
+          {offerItems?.map((offerItem: any, i) => (
+            <div className="offer" key={i}>
+              {offerItem?.image_url && (
+                <img
+                  src={offerItem?.image_url || "/images/swing.jpeg"}
+                  alt="ig"
+                />
+              )}
+              <h3>{offerItem?.name}</h3>
+            </div>
+          ))}
+        </ScrollContainer>
 
-        <div className="right">
-          <h2>Encode (2022)</h2>
-          <span className="author">
-            <img src={userProfile?.dp || "/images/swing.jpeg"} alt="img" />{" "}
-            <Link href={`/profile/${userProfile?.id}`}>
-              {userProfile?.name || "Comrade"}
-            </Link>
+        <span>
+          <h2>For</h2>
+        </span>
+
+        <ScrollContainer className="scroll-container" horizontal={true}>
+          {considerationItems?.map((considerationItem: any, i) => (
+            <div className="consideration" key={i}>
+              {considerationItem?.image_url && (
+                <img
+                  src={considerationItem?.image_url || "/images/swing.jpeg"}
+                  alt="ig"
+                />
+              )}
+              <h3>
+                {considerationItem?.name
+                  ? considerationItem?.name
+                  : `WEth ${formatEther(considerationItem?.amount)}`}
+              </h3>
+            </div>
+          ))}
+        </ScrollContainer>
+
+        <div className="nft-desc">
+          <span className="nft_sale">
+            <span
+              className="nft_author"
+              onClick={() => router.push(`/profile/${foundUser?.[0]}`)}
+            >
+              {" "}
+              <img
+                src={
+                  foundUser?.length > 2
+                    ? `${foundUser?.[4]}`
+                    : "/images/swing.jpeg"
+                }
+                alt="img"
+                className="nft_author_image"
+              />
+              <p>{foundUser?.length > 2 ? foundUser?.[2] : "Comrade"}</p>{" "}
+            </span>{" "}
+            <div className="fulfillBtn">
+              <button onClick={fulfillOrder}>Fulfill Order</button>
+            </div>
           </span>
-          <span className="tabs">
-            {tabs.map((tab, index) => (
-              <span
-                className={`tab ${activeTab === tab && "active"}`}
-                key="index"
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab}
-                <div className="line"></div>
-              </span>
-            ))}
-          </span>
-
-          <div>
-            {activeTab == "Description" ? (
-              <div className="descr">
-                <p>Build the future of Finance</p>
-                <span className="price">
-                  <span>Price</span>
-                  <h2>1 ETH</h2>
-                </span>
-
-                <div className="buy">
-                  <button onClick={() => buyNft(nft?.tokenId)}>Buy NFT</button>
-                </div>
-              </div>
-            ) : activeTab == "History" ? (
-              <ScrollContainer className="historys">
-                {history &&
-                  history?.map((transaction, index) => (
-                    <div className="history" key={index}>
-                      <span className="title">
-                        Transaction {history?.length - index}
-                      </span>
-                      <span className="row">
-                        <h4>Txn Hash</h4>
-                        <h4>{transaction?.tx_hash?.slice(0, 33)}</h4>
-                        <h4>{transaction?.tx_hash?.slice(33)}</h4>
-                      </span>
-                      <span className="row">
-                        <h4>From:</h4> <h4> {transaction?.from_address}</h4>
-                      </span>
-                      <span className="row">
-                        <h4>To:</h4> <h4> {transaction?.to_address}</h4>
-                      </span>
-                      <span className="row">
-                        <h4>Token ID:</h4>
-                        <h4>{nft.tokenId}</h4>
-                      </span>
-                      <span className="row">
-                        <h4>Token:</h4>
-                        <h4>UTT</h4>
-                      </span>
-                    </div>
-                  ))}
-              </ScrollContainer>
-            ) : (
-              ""
-            )}
-          </div>
         </div>
       </div>
     </StyledListingDetails>
@@ -144,194 +140,171 @@ const StyledListingDetails = styled(motion.div)<{ theme_: boolean }>`
   @media screen and (max-width: 900px) {
     padding: 1rem 0rem;
   }
-
-  .author {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    img {
-      width: 2rem;
-      height: 2rem;
-      border-radius: 50%;
-    }
-  }
-  .comments {
-    width: 50%;
+  .listing {
+    width: 80%;
+    padding: 1rem;
+    border-radius: 10px;
     display: flex;
     flex-flow: column wrap;
-    border-radius: 0.5rem;
-    display: flex;
-    flex-flow: column wrap;
-    font-size: 1.2rem;
-    overflow: hidden;
-    -moz-box-shadow: 0 0 3px #ccc;
-    -webkit-box-shadow: 0 0 3px #ccc;
-    box-shadow: 0 0 3px #ccc;
-    @media screen and (max-width: 900px) {
-      border-radius: 0rem;
-      width: 100%;
-    }
-  }
-  .tabs {
-    display: flex;
-    flex-flow: row wrap;
     gap: 1rem;
+    background: ${({ theme_ }) =>
+      theme_ ? "rgb(23, 24, 24,0.9)" : "rgb(248, 248, 248,0.9)"};
+    background: ${({ theme_ }) => (theme_ ? "#24242b" : "#f2f2f2")};
+
+    overflow: hidden;
+    img {
+      height: 15rem;
+      width: 100%;
+      object-fit: cover;
+    }
+
+    display: flex;
+    flex-flow: column wrap;
     width: 100%;
-    .tab {
-      padding: 0rem 1.2rem;
-      padding-top: 0.5rem;
-      font-size: 1.2rem;
-      cursor: pointer;
-      background: ${({ theme_ }) => (theme_ ? "#24242b" : "#f2f2f2")};
+
+    .scroll-container {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+
       -moz-box-shadow: 0 0 4.5px #ccc;
       -webkit-box-shadow: 0 0 4.5px #ccc;
       box-shadow: 0 0 4.5px #ccc;
-      border-radius: 2rem;
-      &:hover {
-        color: gray;
-      }
-      .line {
-        margin-top: 0.5rem;
-        padding: 2px;
-        background: inherit;
-        border-radius: 3rem 3rem 0px 0px;
-      }
-      &.active {
-        color: ${({ theme_ }) => (theme_ ? "black" : "white")};
-        background: ${({ theme_ }) => (theme_ ? "#ffffff" : "#16161A")};
-      }
-    }
-  }
-  .desc {
-    display: flex;
-    flex-flow: row wrap;
-    @media screen and (max-width: 900px) {
-      flex-flow: column wrap;
-      padding: 0rem 1rem;
+      padding: 1rem;
       gap: 1rem;
+      border-radius: 0.5rem;
+      width: 100%;
+      overflow-x: scroll;
     }
-    .left {
-      width: 50%;
-      @media screen and (max-width: 900px) {
-        width: 100%;
-        height: 100%;
-        padding-right: 0rem;
-      }
-      padding-right: 2rem;
-
-      img {
-        width: 100%;
-        height: auto;
-
-        object-fit: cover;
-        border-radius: 0.5rem;
-      }
-    }
-    .right {
-      @media screen and (max-width: 900px) {
-        width: 100%;
-      }
-      width: 50%;
-      display: flex;
-      flex-flow: column wrap;
-
-      padding: 2rem 4rem;
-      gap: 1rem;
-      @media screen and (max-width: 900px) {
-        padding: 0rem 0rem;
-      }
-      .descr {
-        display: flex;
-        flex-flow: column wrap;
-
-        @media screen and (max-width: 900px) {
-          width: 100%;
-        }
-        .price {
-          display: flex;
-          flex-flow: column wrap;
-          padding: 0.4rem 0rem;
-          gap: 0.3rem;
-          span {
-            font-size: 1.4rem;
-          }
-          h2 {
-            color: #0592ec;
-            font-size: 1.2rem;
-          }
-          a {
-            font-size: 1.2rem;
-            color: #0592ec;
-          }
-        }
-        .buy {
-          padding: 0.5rem 0rem;
-        }
-        .interact {
-          display: flex;
-          gap: 1rem;
-          padding: 0.5rem 0rem;
-        }
-      }
-      .creator {
-        display: flex;
-        flex-flow: row wrap;
-        gap: 20rem;
-        @media screen and (max-width: 900px) {
-          gap: 1rem;
-        }
-        .creator-row {
-          display: flex;
-          gap: 0.5rem;
-          align-items: center;
-          img {
-            width: 2rem;
-            height: 2rem;
-            border-radius: 50%;
-          }
-        }
-        h5 {
-          color: #acacac;
-        }
-      }
-    }
-  }
-
-  .historys {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-    cursor: grab;
-    height: 15rem;
-    overflow-y: scroll;
-    -moz-box-shadow: 0 0 3px #ccc;
-    -webkit-box-shadow: 0 0 3px #ccc;
-    box-shadow: 0 0 3px #ccc;
-    background: ${({ theme_ }) => (theme_ ? "#24242b" : "#f2f2f2")};
-    padding: 1rem;
-    border-radius: 0.5rem;
-    flex-shrink: 0;
-    @media screen and (max-width: 900px) {
-    }
-    .history {
-      flex-shrink: 0;
+    .offer,
+    .consideration {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
-      -moz-box-shadow: 0 0 3px #ccc;
-      -webkit-box-shadow: 0 0 3px #ccc;
-      box-shadow: 0 0 3px #ccc;
-      border: none;
-      padding: 1rem;
-
-      .title {
-        text-align: center;
+      -moz-box-shadow: 0 0 4.5px #ccc;
+      -webkit-box-shadow: 0 0 4.5px #ccc;
+      box-shadow: 0 0 4.5px #ccc;
+      overflow: hidden;
+      border-radius: 0.5rem;
+      min-height: 5rem;
+      width: 10rem;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      h3 {
+        padding: 0.5rem;
       }
-      h4 {
-        font-size: 0.8rem;
-        font-weight: 400;
-        font-size: 1rem;
+      img {
+        width: 10rem;
+        height: 5rem;
+        object-fit: cover;
+      }
+    }
+
+    .nft-desc {
+      display: flex;
+      flex-flow: column wrap;
+
+      gap: 0.5rem;
+
+      .nft_title,
+      .nft_sale {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-between;
+        gap: 0.5rem;
+        align-items: center;
+        .nft_author {
+          cursor: pointer;
+        }
+        .nft_author_image {
+          width: 2rem;
+          height: 2rem;
+          object-fit: cover;
+          border-radius: 50%;
+        }
+      }
+      .nft_title {
+        h3 {
+          font-weight: 500;
+        }
+        p {
+          color: #0592ec;
+        }
+      }
+      .nft_sale {
+        padding: 1rem 0rem;
+        .nft_author {
+          display: flex;
+          align-items: center;
+          gap: 0.2rem;
+        }
       }
     }
   }
 `;
+const dummyData = [
+  "f18bd848-0cfc-4fda-9042-751185095b61",
+
+  {
+    parameters: {
+      offerer: "0x87b0B98bf74a1Fb6ad89b5bB86dA3C9C24eee1Ce",
+    },
+    signature:
+      "0x2c500ae8b64222632be3297e9f31a6e508d4e4d4c9f7e2adbc30fc89b8b5208a6de55f5a95b19a5a1fda0491c241f8d5ad436a32f7f9a3bda6f3eee03112984e",
+  },
+  [
+    {
+      address: "0x77556b05ced56eeb8edae5a0e9cd2b4e9948534b",
+      collectionName: "Buidl Name Service",
+      image_url:
+        "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNzAiIGhlaWdodD0iMjcwIiBmaWxsPSJub25lIj48cGF0aCBmaWxsPSJ1cmwoI0IpIiBkPSJNMCAwaDI3MHYyNzBIMHoiLz48ZGVmcz48ZmlsdGVyIGlkPSJBIiBjb2xvci1pbnRlcnBvbGF0aW9uLWZpbHRlcnM9InNSR0IiIGZpbHRlclVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgaGVpZ2h0PSIyNzAiIHdpZHRoPSIyNzAiPjxmZURyb3BTaGFkb3cgZHg9IjAiIGR5PSIxIiBzdGREZXZpYXRpb249IjIiIGZsb29kLW9wYWNpdHk9Ii4yMjUiIHdpZHRoPSIyMDAlIiBoZWlnaHQ9IjIwMCUiLz48L2ZpbHRlcj48L2RlZnM+PHBhdGggZD0iTTcyLjg2MyA0Mi45NDljLS42NjgtLjM4Ny0xLjQyNi0uNTktMi4xOTctLjU5cy0xLjUyOS4yMDQtMi4xOTcuNTlsLTEwLjA4MSA2LjAzMi02Ljg1IDMuOTM0LTEwLjA4MSA2LjAzMmMtLjY2OC4zODctMS40MjYuNTktMi4xOTcuNTlzLTEuNTI5LS4yMDQtMi4xOTctLjU5bC04LjAxMy00LjcyMWE0LjUyIDQuNTIgMCAwIDEtMS41ODktMS42MTZjLS4zODQtLjY2NS0uNTk0LTEuNDE4LS42MDgtMi4xODd2LTkuMzFjLS4wMTMtLjc3NS4xODUtMS41MzguNTcyLTIuMjA4YTQuMjUgNC4yNSAwIDAgMSAxLjYyNS0xLjU5NWw3Ljg4NC00LjU5Yy42NjgtLjM4NyAxLjQyNi0uNTkgMi4xOTctLjU5czEuNTI5LjIwNCAyLjE5Ny41OWw3Ljg4NCA0LjU5YTQuNTIgNC41MiAwIDAgMSAxLjU4OSAxLjYxNmMuMzg0LjY2NS41OTQgMS40MTguNjA4IDIuMTg3djYuMDMybDYuODUtNC4wNjV2LTYuMDMyYy4wMTMtLjc3NS0uMTg1LTEuNTM4LS41NzItMi4yMDhhNC4yNSA0LjI1IDAgMCAwLTEuNjI1LTEuNTk1TDQxLjQ1NiAyNC41OWMtLjY2OC0uMzg3LTEuNDI2LS41OS0yLjE5Ny0uNTlzLTEuNTI5LjIwNC0yLjE5Ny41OWwtMTQuODY0IDguNjU1YTQuMjUgNC4yNSAwIDAgMC0xLjYyNSAxLjU5NWMtLjM4Ny42Ny0uNTg1IDEuNDM0LS41NzIgMi4yMDh2MTcuNDQxYy0uMDEzLjc3NS4xODUgMS41MzguNTcyIDIuMjA4YTQuMjUgNC4yNSAwIDAgMCAxLjYyNSAxLjU5NWwxNC44NjQgOC42NTVjLjY2OC4zODcgMS40MjYuNTkgMi4xOTcuNTlzMS41MjktLjIwNCAyLjE5Ny0uNTlsMTAuMDgxLTUuOTAxIDYuODUtNC4wNjUgMTAuMDgxLTUuOTAxYy42NjgtLjM4NyAxLjQyNi0uNTkgMi4xOTctLjU5czEuNTI5LjIwNCAyLjE5Ny41OWw3Ljg4NCA0LjU5YTQuNTIgNC41MiAwIDAgMSAxLjU4OSAxLjYxNmMuMzg0LjY2NS41OTQgMS40MTguNjA4IDIuMTg3djkuMzExYy4wMTMuNzc1LS4xODUgMS41MzgtLjU3MiAyLjIwOGE0LjI1IDQuMjUgMCAwIDEtMS42MjUgMS41OTVsLTcuODg0IDQuNzIxYy0uNjY4LjM4Ny0xLjQyNi41OS0yLjE5Ny41OXMtMS41MjktLjIwNC0yLjE5Ny0uNTlsLTcuODg0LTQuNTlhNC41MiA0LjUyIDAgMCAxLTEuNTg5LTEuNjE2Yy0uMzg1LS42NjUtLjU5NC0xLjQxOC0uNjA4LTIuMTg3di02LjAzMmwtNi44NSA0LjA2NXY2LjAzMmMtLjAxMy43NzUuMTg1IDEuNTM4LjU3MiAyLjIwOGE0LjI1IDQuMjUgMCAwIDAgMS42MjUgMS41OTVsMTQuODY0IDguNjU1Yy42NjguMzg3IDEuNDI2LjU5IDIuMTk3LjU5czEuNTI5LS4yMDQgMi4xOTctLjU5bDE0Ljg2NC04LjY1NWMuNjU3LS4zOTQgMS4yMDQtLjk1IDEuNTg5LTEuNjE2cy41OTQtMS40MTguNjA5LTIuMTg3VjU1LjUzOGMuMDEzLS43NzUtLjE4NS0xLjUzOC0uNTcyLTIuMjA4YTQuMjUgNC4yNSAwIDAgMC0xLjYyNS0xLjU5NWwtMTQuOTkzLTguNzg2eiIgZmlsbD0iI2ZmZiIvPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0iQiIgeDE9IjAiIHkxPSIwIiB4Mj0iMjcwIiB5Mj0iMjcwIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iIzA5ZTFmZiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzAzZmY4NSIgc3RvcC1vcGFjaXR5PSIuOTkiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48dGV4dCB4PSIzMi41IiB5PSIyMzEiIGZvbnQtc2l6ZT0iMjciIGZpbGw9IiNmZmYiIGZpbHRlcj0idXJsKCNBKSIgZm9udC1mYW1pbHk9IlBsdXMgSmFrYXJ0YSBTYW5zLERlamFWdSBTYW5zLE5vdG8gQ29sb3IgRW1vamksQXBwbGUgQ29sb3IgRW1vamksc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiPmthc3V3YS5idWlkbDwvdGV4dD48L3N2Zz4=",
+
+      inputItem: {
+        itemType: 2,
+        token: "0x77556b05ced56eeb8edae5a0e9cd2b4e9948534b",
+        identifier: "7",
+      },
+      name: "kasuwa.buidl",
+      symbol: "BNS",
+      token_id: "7",
+    },
+  ],
+  [
+    {
+      amount: "2000000000000000000",
+      inputItem: {
+        amount: "2000000000000000000",
+        token: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      },
+      token: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    },
+    {
+      address: "0x3dad63203f1a62724dacb6a473fe9ae042e2ecc3",
+      collectionName: "Cool cats",
+      image_url:
+        "https://lh3.googleusercontent.com/shLmITS0VLVaFjaCPuFHlAHFBZpfurUGztC_2dXAj1JCpFe9nBk4PHhxVe3rWQHoyBqZw94ce1uBH_etH3vqTN1I53FzAVhHzAXbCg=s250",
+      inputItem: {
+        itemType: 2,
+        token: "0x3dad63203f1a62724dacb6a473fe9ae042e2ecc3",
+        identifier: "9",
+      },
+      name: "Cool Cat #9",
+      symbol: "COOL",
+      token_id: "9",
+    },
+    {
+      address: "0x3dad63203f1a62724dacb6a473fe9ae042e2ecc3",
+      collectionName: "Cool cats",
+      image_url:
+        "https://lh3.googleusercontent.com/SapH0afE2WYe5KXLcgtVr-wmujPsakFQlNWME3y3xZnXaLPYe4t0xHkjNgu7gHgyeMfYJnzbM41BlmmET4-g9r3tyww88yIShCZGLg=s250",
+      inputItem: {
+        itemType: 2,
+        token: "0x3dad63203f1a62724dacb6a473fe9ae042e2ecc3",
+        identifier: "8",
+      },
+      name: "Cool Cat #8",
+      symbol: "COOL",
+      token_id: "8",
+    },
+  ],
+];
