@@ -38,7 +38,7 @@ export default function Home() {
         </button>
       </div>
       <div className="nft-desc">
-        <Lottie options={defaultOptions} height={500} width={800} />
+        <Lottie options={defaultOptions} height={500} width={"100%"} />
       </div>
     </StyledHome>
   );

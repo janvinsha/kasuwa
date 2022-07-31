@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { CreateOrderInput } from "@opensea/seaport-js/lib/types";
+import { CreateOrderInput, Fulfillment } from "@opensea/seaport-js/lib/types";
 import { Seaport } from "@opensea/seaport-js";
 
 import { ethers } from "ethers";
@@ -15,13 +15,23 @@ import Header from "./Header";
 import AppContext from "../context/AppContext";
 import { GlobalStyle } from "../components";
 
-import { OfferItem, ConsiderationItem } from "types/tokenTypes";
+import {
+  OfferItem,
+  ConsiderationItem,
+  OrderWithMetadata,
+} from "types/tokenTypes";
 import { Wallet, providers } from "ethers";
 import { connect } from "@tableland/sdk";
 
 import { v4 as uuid } from "uuid";
 import notify from "../hooks/notification";
+import { create } from "ipfs-http-client";
 
+const client = create({
+  host: "ipfs.infura.io",
+  port: 5001,
+  protocol: "https",
+});
 interface Props {
   children: any;
 }
@@ -148,6 +158,7 @@ const Layout = ({ children }: Props) => {
     orderParams: any;
     offerItems: any;
     considerationItems: any;
+    offerer?: any;
   }
   const createSeaportOrder = async ({
     offerItems,
@@ -174,11 +185,23 @@ const Layout = ({ children }: Props) => {
 
         console.log("order: ", JSON.stringify(res));
         const unique_id = uuid();
+
+        let offers = await client.add(JSON.stringify(offerItems));
+        let considerations = await client.add(
+          JSON.stringify(considerationItems)
+        );
+        let orderJson = await client.add(JSON.stringify(res));
+        console.log(
+          "HERE SRE THE IPFS LINKS",
+          offers,
+          considerations,
+          orderJson
+        );
         const orderToSave: OrderWithMetadata = {
           id: unique_id.toString(),
-          orderJson: JSON.stringify(res),
-          offers: JSON.stringify(offerItems),
-          considerations: JSON.stringify(considerationItems),
+          orderJson: `https://ipfs.infura.io/ipfs/${orderJson.path}`,
+          offers: `https://ipfs.infura.io/ipfs/${offers.path}`,
+          considerations: `https://ipfs.infura.io/ipfs/${considerations.path}`,
         };
         console.log("HERE IS THE ORDER TO SAVE", orderToSave);
         createListings(orderToSave);
@@ -190,30 +213,32 @@ const Layout = ({ children }: Props) => {
       console.log(e);
     }
   };
-  const fulfillSeaportOrder = async ({
-    offerItems,
-    considerationItems,
-  }: SeaportOrderProps) => {
+  const fulfillSeaportOrder = async (order) => {
     try {
       let wallet = await web3Modal.connect();
       const tProvider = new ethers.providers.Web3Provider(wallet);
       const seaport = new Seaport(tProvider);
       let transactionHash: string;
-      const orderParams: CreateOrderInput = {
-        offer: offerItems?.map((item) => item?.inputItem),
-        consideration: considerationItems?.map((item) => item?.inputItem),
-      };
+
       const { executeAllActions } = await seaport.fulfillOrder({
-        order: orderParams,
+        order: order,
         accountAddress: currentAccount,
       });
+
       const transaction = await executeAllActions();
       transactionHash = transaction.hash;
       notify({ title: "Order fulfilled successfully", type: "success" });
       return transactionHash;
     } catch (err) {
       console.log(err);
-      notify({ title: "Error fulfilling order", type: "error" });
+      if (err?.method == "balanceOf(address)") {
+        notify({
+          title: "You do not have the necessary requirements to fulfill order",
+          type: "error",
+        });
+      } else {
+        notify({ title: "Error fulfilling order", type: "error" });
+      }
     }
   };
 
@@ -277,7 +302,7 @@ const Layout = ({ children }: Props) => {
       const { rows } = await tbl.read(
         `SELECT * FROM ${listingsTable} WHERE id = '${id}'`
       );
-      console.log(rows);
+      console.log(rows, "TRYING TO GET THE LISTING");
       return rows;
     } catch (err) {
       console.log(err);

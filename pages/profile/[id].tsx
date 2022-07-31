@@ -42,10 +42,10 @@ export default function Profile() {
   const nfts = [{}, {}];
   const getProfileNfts = async () => {
     // let chainId = 137;
-    alert(chainId);
+
     if (currentAccount) {
       const { data } = await axios.get(
-        `https://api.covalenthq.com/v1/${chainId}/address/${currentAccount}/balances_v2/?quote-currency=USD&format=JSON&nft=true&no-nft-fetch=false&key=ckey_a2341ac051bd419d815522ed217`
+        `https://api.covalenthq.com/v1/${80001}/address/${currentAccount}/balances_v2/?quote-currency=USD&format=JSON&nft=true&no-nft-fetch=false&key=ckey_a2341ac051bd419d815522ed217`
       );
       console.log("THIS IS THE NFTS OF THE USER", data?.data?.items, chainId);
 
@@ -205,8 +205,6 @@ const StyledProfile = styled(motion.div)<{ theme_: boolean }>`
   flex-flow: row wrap;
   min-height: 80vh;
   @media screen and (max-width: 900px) {
-    position: absolute;
-    padding-bottom: 15%;
     padding: 0rem 0rem;
   }
   padding: 0rem 0rem;
@@ -268,6 +266,10 @@ const StyledProfile = styled(motion.div)<{ theme_: boolean }>`
         display: flex;
         gap: 1rem;
         align-items: center;
+        @media screen and (max-width: 900px) {
+          display: flex;
+          flex-direction: column;
+        }
       }
       .dp {
         position: absolute;
@@ -290,6 +292,10 @@ const StyledProfile = styled(motion.div)<{ theme_: boolean }>`
         -moz-box-shadow: 0 0 4.5px #ccc;
         -webkit-box-shadow: 0 0 4.5px #ccc;
         box-shadow: 0 0 4.5px #ccc;
+        @media screen and (max-width: 900px) {
+          bottom: 3%;
+          width: 10rem;
+        }
         .bio {
           display: flex;
           flex-direction: column;
@@ -333,6 +339,10 @@ const StyledProfile = styled(motion.div)<{ theme_: boolean }>`
       flex-direction: column;
       align-self: flex-end;
       padding: 2rem 3rem;
+      @media screen and (max-width: 900px) {
+        width: 100%;
+        padding: 1rem 1rem;
+      }
     }
 
     .tabs {
@@ -369,6 +379,7 @@ const StyledProfile = styled(motion.div)<{ theme_: boolean }>`
   .cards {
     width: 100%;
     padding: 2rem 0rem;
+
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-column-gap: 1.5rem;
@@ -378,7 +389,7 @@ const StyledProfile = styled(motion.div)<{ theme_: boolean }>`
       grid-column-gap: 0.5rem;
       grid-row-gap: 0.5rem;
       width: 100%;
-      padding: 1rem;
+      padding: 1rem 0rem;
     }
   }
 `;

@@ -335,6 +335,9 @@ const StyledDex = styled(motion.div)`
   h2 {
     font-weight: 500;
   }
+  @media (max-width: 900px) {
+    padding: 1.5rem;
+  }
   .dex {
     width: 28rem;
     padding: 2rem 2rem 2rem 2rem;
@@ -357,6 +360,11 @@ const StyledDex = styled(motion.div)`
       width: 100%;
       justify-content: center;
       gap: 1rem;
+      @media (max-width: 900px) {
+        width: 100%;
+        gap: 0.5rem;
+        padding: 0rem 2rem;
+      }
       h3 {
         font-weight: 500;
       }
@@ -371,6 +379,9 @@ const StyledDex = styled(motion.div)`
       display: flex;
       flex-flow: column wrap;
       gap: 1rem;
+      @media (max-width: 900px) {
+        width: 100%;
+      }
       h3 {
         font-weight: 500;
       }
@@ -390,14 +401,23 @@ const StyledDex = styled(motion.div)`
         box-shadow: 0 0 3px #0592ec;
         border-radius: 2rem;
         padding: 1rem;
+        @media (max-width: 900px) {
+          width: 100%;
+        }
         .row-input-div {
           padding: 0.5rem;
+          @media (max-width: 900px) {
+            width: 100%;
+          }
           .row-input {
             display: flex;
             background: none;
             font-size: 1.2rem;
             border: none;
             outline: none;
+            @media (max-width: 900px) {
+              width: 100%;
+            }
           }
         }
       }

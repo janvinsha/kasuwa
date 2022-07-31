@@ -178,6 +178,8 @@ const StyledCreateListing = styled(motion.div)`
   justify-content: center;
   @media screen and (max-width: 900px) {
     gap: 0.5rem;
+    width: 100%;
+    padding: 1rem 2rem;
   }
   width: 100%;
   .page_header {
@@ -201,6 +203,7 @@ const StyledCreateListing = styled(motion.div)`
       flex-flow: column wrap;
       padding: 1rem 0rem;
       gap: 0rem;
+      width: 100%;
     }
     h2 {
       font-size: 1.6rem;

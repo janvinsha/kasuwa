@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import Link from "next/link";
+import axios from "axios";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
@@ -11,22 +12,34 @@ import { parseEther, formatEther } from "ethers/lib/utils";
 const NftCard = ({ listing }) => {
   const { theme, currentAccount, getProfile } = useContext(AppContext);
   const router = useRouter();
-  const offerItems = listing?.[2];
-  const considerationItems = listing?.[3];
+
+  const [offerItems, setOfferItems] = useState();
+  const [considerationItems, setConsiderationItems] = useState();
   const [foundUser, setFoundUser] = useState();
   useEffect(() => {
-    getUserProfile();
+    getData();
   }, []);
-  const getUserProfile = async () => {
-    if (currentAccount) {
-      const res = await getProfile(`${listing?.[1]?.parameters?.offerer}`);
-      console.log(
-        "GET PRFOILE RESPOMSE HERE NFT CARD...................",
-        res,
-        listing?.[1]?.parameters?.offerer
-      );
-      setFoundUser(res?.[0]);
-    }
+  const getData = async () => {
+    let { data: orderData } = await axios.get(`${listing?.[1]}`);
+    let { data: offersData } = await axios.get(`${listing?.[2]}`);
+    let { data: considerationsData } = await axios.get(`${listing?.[3]}`);
+
+    console.log(
+      orderData,
+      offersData,
+      considerationsData,
+      "TRYING TO GET THE DATA FRO IPFS"
+    );
+    setOfferItems(offersData);
+    setConsiderationItems(considerationsData);
+
+    const res = await getProfile(`${orderData?.parameters?.offerer}`);
+    console.log(
+      "GET PRFOILE RESPOMSE HERE NFT CARD...................",
+      res,
+      listing?.[1]?.parameters?.offerer
+    );
+    setFoundUser(res?.[0]);
   };
   return (
     <StyledNftCard

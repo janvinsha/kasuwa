@@ -18,7 +18,7 @@ export default function Listings() {
   const getData = async () => {
     const tempListings = await getListings();
     setListings(tempListings);
-    console.log("listings"), listings;
+    console.log("HERE ARE THE LISTINGS OOOooooooooooo", tempListings);
   };
   return (
     <StyledListings theme_={theme}>
@@ -28,7 +28,7 @@ export default function Listings() {
             <h2>Listings</h2>
           </div>
           <div className="right">
-            <Filter
+            {/* <Filter
               name="Category"
               label=""
               asterik={false}
@@ -40,12 +40,12 @@ export default function Listings() {
               ]}
               onChange={(e) => setSortBy(e.target.value)}
               required
-            />
+            /> */}
           </div>
         </div>
 
         <div className="cards">
-          {dummyData?.map((listing: any, i) => (
+          {listings?.map((listing: any, i) => (
             <NftCard listing={listing} key={i} />
           ))}
         </div>

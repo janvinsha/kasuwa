@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import * as React from "react";
 import { useRouter } from "next/router";
-
+import axios from "axios";
 import ScrollContainer from "react-indiana-drag-scroll";
 import { motion } from "framer-motion";
 import styled from "styled-components";
@@ -16,50 +16,48 @@ export default function ListingDetails() {
   const { id: nftId } = router.query;
 
   const [loading, setLoading] = useState(false);
-  const {
-    theme,
-    buyingNft,
-    buyNft,
-    currentAccount,
-    getListing,
-    getProfile,
-    fulfillSeaportOrder,
-  } = useContext(AppContext);
-  const [share, setShare] = useState(false);
-  const [text, setText] = useState("");
-  const tabs = ["Description", "History"];
-  const [activeTab, setActiveTab] = useState("Description");
+  const { theme, getListing, getProfile, fulfillSeaportOrder } =
+    useContext(AppContext);
+  const [order, setOrder] = useState();
+  const [offerItems, setOfferItems] = useState([]);
+  const [considerationItems, setConsiderationItems] = useState([]);
+  const [foundUser, setFoundUser] = useState();
 
-  const [listing, setListing] = useState(dummyData);
-  const offerItems = listing?.[2];
-  const considerationItems = listing?.[3];
   useEffect(() => {
     getData();
-    getUserProfile();
   }, []);
 
   const getData = async () => {
-    const tempListing = await getListing(nftId);
-    if (tempListing) {
-      // setListing(tempListing);
-    }
-    console.log("listings"), listing;
-  };
-  const [foundUser, setFoundUser] = useState();
+    let tempListing = await getListing(nftId);
+    tempListing = tempListing?.[0];
+    console.log("listing is here", tempListing?.[0]);
 
-  const getUserProfile = async () => {
-    if (currentAccount) {
-      const res = await getProfile(`${listing?.[1]?.parameters?.offerer}`);
-      console.log("GET PRFOILE RESPOMSE HERE", res);
-      setFoundUser(res?.[0]);
-    }
+    let { data: orderData } = await axios.get(`${tempListing?.[1]}`);
+    let { data: offersData } = await axios.get(`${tempListing?.[2]}`);
+    let { data: considerationsData } = await axios.get(`${tempListing?.[3]}`);
+
+    console.log(
+      orderData,
+      offersData,
+      considerationsData,
+      "TRYING TO GET THE DATA FRO IPFS"
+    );
+    setOrder(orderData);
+    setOfferItems(offersData);
+    setConsiderationItems(considerationsData);
+
+    const res = await getProfile(`${orderData?.parameters?.offerer}`);
+    console.log(
+      "GET PRFOILE RESPOMSE HERE NFT CARD...................",
+      res,
+      tempListing?.[1]?.parameters?.offerer
+    );
+    setFoundUser(res?.[0]);
   };
+
   const fulfillOrder = async () => {
     setLoading(true);
-    fulfillSeaportOrder({
-      considerationItems,
-      offerItems,
-    });
+    fulfillSeaportOrder(order);
     setLoading(false);
   };
   return (

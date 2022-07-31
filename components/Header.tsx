@@ -22,7 +22,9 @@ const Header = () => {
 
     changeTheme,
   } = useContext(AppContext);
-
+  useEffect(() => {
+    setMenuToggle(false);
+  }, [pathname]);
   return (
     <StyledHeader menuToggle={menuToggle} theme_={theme}>
       <motion.div className="left">
@@ -98,16 +100,28 @@ const Header = () => {
                 Swap
               </Link>
             </div>
-            <div className="link">
-              <Link
-                href="/poap"
-                className={pathname == "/poap" ? "active" : ""}
-              >
-                Poap
-              </Link>
-            </div>
-
-            <button onClick={() => {}}>List</button>
+            <HeaderSearch />
+            <button onClick={() => router.push("/create-nft")}>
+              Create Nft
+            </button>
+            {currentAccount ? (
+              <div className="link">
+                <Link href={`/profile/${currentAccount}`}>Profile</Link>
+              </div>
+            ) : (
+              <button onClick={() => connectWallet()} className="secondary-btn">
+                Connect Wallet
+              </button>
+            )}
+            {theme ? (
+              <button onClick={() => changeTheme()} className="theme-btn ">
+                <DarkModeIcon />
+              </button>
+            ) : (
+              <button onClick={() => changeTheme()} className="theme-btn ">
+                <Brightness7Icon />
+              </button>
+            )}
           </motion.div>
         </div>
       </motion.div>
