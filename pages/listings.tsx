@@ -27,21 +27,7 @@ export default function Listings() {
           <div className="left">
             <h2>Listings</h2>
           </div>
-          <div className="right">
-            {/* <Filter
-              name="Category"
-              label=""
-              asterik={false}
-              defaultValue="art"
-              className="filt"
-              options={[
-                { label: "Popular", value: "popular" },
-                { label: "Latest", value: "latest" },
-              ]}
-              onChange={(e) => setSortBy(e.target.value)}
-              required
-            /> */}
-          </div>
+          <div className="right"></div>
         </div>
 
         <div className="cards">

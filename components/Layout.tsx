@@ -27,10 +27,19 @@ import { v4 as uuid } from "uuid";
 import notify from "../hooks/notification";
 import { create } from "ipfs-http-client";
 
+const projectId = process.env.NEXT_PUBLIC_INFURA_PROJECT_ID;
+const projectSecret = process.env.NEXT_PUBLIC_INFURA_PROJECT_SECRET;
+
+const auth =
+  "Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
+
 const client = create({
   host: "ipfs.infura.io",
   port: 5001,
   protocol: "https",
+  headers: {
+    authorization: auth,
+  },
 });
 interface Props {
   children: any;
@@ -199,9 +208,9 @@ const Layout = ({ children }: Props) => {
         );
         const orderToSave: OrderWithMetadata = {
           id: unique_id.toString(),
-          orderJson: `https://ipfs.infura.io/ipfs/${orderJson.path}`,
-          offers: `https://ipfs.infura.io/ipfs/${offers.path}`,
-          considerations: `https://ipfs.infura.io/ipfs/${considerations.path}`,
+          orderJson: `https://kasuwa.infura-ipfs.io/ipfs/${orderJson.path}`,
+          offers: `https://kasuwa.infura-ipfs.io/ipfs/${offers.path}`,
+          considerations: `https://kasuwa.infura-ipfs.io/ipfs/${considerations.path}`,
         };
         console.log("HERE IS THE ORDER TO SAVE", orderToSave);
         createListings(orderToSave);
@@ -327,8 +336,8 @@ const Layout = ({ children }: Props) => {
       const tbl = await connect({ signer });
       console.log(tbl, "THIS IS THE TBL");
       const { name, txnHash } = await tbl.create(
-        `id text, orderJson text, offers text,considerations text,primary key (id)`, // Table schema definition
-        `orderListings` // Optional prefix; used to define a human-readable string
+        `id text, name text,image text,owner text,decription text, price text, startDate text,endDate text, primary key (id)`, // Table schema definition
+        `collections` // Optional prefix; used to define a human-readable string
       );
       // const { name, txnHash } = await tbl.create(
       //   `id text,bio text, handle text,dp text, banner text, primary key (id)`, // Table schema definition
@@ -337,7 +346,7 @@ const Layout = ({ children }: Props) => {
 
       console.log(name, txnHash, "HERE IS THE RESPONSE");
     } catch (error) {
-      console.log(error, "THIS IS THE ERROR           ");
+      console.log(error, "THIS IS THE ERROR ");
     }
   };
   return (

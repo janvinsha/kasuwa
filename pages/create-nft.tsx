@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useContext, useState } from "react";
 import axios from "axios";
-import { ethers } from "ethers";
+
 import { create } from "ipfs-http-client";
 import { motion } from "framer-motion";
 import styled from "styled-components";
@@ -15,10 +15,19 @@ import AppContext from "../context/AppContext";
 import PhotoIcon from "@mui/icons-material/Photo";
 
 import notify from "../hooks/notification";
+const projectId = process.env.NEXT_PUBLIC_INFURA_PROJECT_ID;
+const projectSecret = process.env.NEXT_PUBLIC_INFURA_PROJECT_SECRET;
+
+const auth =
+  "Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
+
 const client = create({
   host: "ipfs.infura.io",
   port: 5001,
   protocol: "https",
+  headers: {
+    authorization: auth,
+  },
 });
 const CreateListing = () => {
   const [name, setName] = useState("");
@@ -63,7 +72,7 @@ const CreateListing = () => {
 
     try {
       let photo = await client.add(dp);
-      let photoUrl = `https://ipfs.infura.io/ipfs/${photo.path}`;
+      let photoUrl = `https://kasuwa.infura-ipfs.io/ipfs/${photo.path}`;
       let result = await client.add(
         JSON.stringify({
           name: name,
@@ -85,7 +94,7 @@ const CreateListing = () => {
         {
           chain: "polygon",
           contract_address: "0x0F2b3C8A55bA4074D23F839a17307330D9D0788B",
-          metadata_uri: `https://ipfs.infura.io/ipfs/${result.path}`,
+          metadata_uri: `https://kasuwa.infura-ipfs.io/ipfs/${result.path}`,
           mint_to_address: `${currentAccount}`,
         },
         config

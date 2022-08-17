@@ -11,21 +11,26 @@ import { Input, Textarea, Loader } from "./index";
 import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
 import notify from "../hooks/notification";
-let API_TOKEN =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDM0MTBFMThhZUMzOGY4M2UyNTMxMzA4QmQyN0QyM0I3MjllNTJDNDUiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0OTQzNjM4OTkyNiwibmFtZSI6IkRBTyJ9.eWlB3VEJKUk3R1S6e5RFRhdONcgBkyCMjrWA9O5kdsA";
-const nftClient = new NFTStorage({ token: API_TOKEN });
+
+const projectId = process.env.NEXT_PUBLIC_INFURA_PROJECT_ID;
+const projectSecret = process.env.NEXT_PUBLIC_INFURA_PROJECT_SECRET;
+
+const auth =
+  "Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
 
 const client = create({
   host: "ipfs.infura.io",
   port: 5001,
   protocol: "https",
+  headers: {
+    authorization: auth,
+  },
 });
 const EditProfileModal = ({ show, onClose, user, setEditingProfile }) => {
   const {
     theme,
-    accountDetails,
     updateProfile,
-    editProfile,
+
     editingProfile,
     currentAccount,
   } = useContext(AppContext);
@@ -76,19 +81,11 @@ const EditProfileModal = ({ show, onClose, user, setEditingProfile }) => {
       let tempUrl;
       if (dp) {
         photo = await client.add(dp);
-        photoUrl = `https://ipfs.infura.io/ipfs/${photo.path}`;
-        const metadata = await nftClient.store({
-          name: "Photo",
-          description: " A photo",
-          image: new File([dp], "A photo on Unreal Market", {
-            type: dp?.type,
-          }),
-        });
-        tempUrl = metadata.url;
+        photoUrl = `https://kasuwa.infura-ipfs.io/ipfs/${photo.path}`;
       }
       if (cover) {
         banner = await client.add(cover);
-        bannerUrl = `https://ipfs.infura.io/ipfs/${banner.path}`;
+        bannerUrl = `https://kasuwa.infura-ipfs.io/ipfs/${banner.path}`;
       }
 
       console.log("IPFS OBJECT", banner, photo);
@@ -102,13 +99,13 @@ const EditProfileModal = ({ show, onClose, user, setEditingProfile }) => {
         banner:
           bannerUrl ||
           user?.[4] ||
-          "https://ipfs.infura.io/ipfs/QmTnLF4RnkuDL2yT8VawLTXKE4L5Px5uYnxtj6dNSF97q4",
+          "https://kasuwa.infura-ipfs.io/ipfs/QmTnLF4RnkuDL2yT8VawLTXKE4L5Px5uYnxtj6dNSF97q4",
         dp:
           photoUrl ||
           user?.[3] ||
-          "https://ipfs.infura.io/ipfs/QmTnLF4RnkuDL2yT8VawLTXKE4L5Px5uYnxtj6dNSF97q4",
-        handle: name,
-        bio,
+          "https://kasuwa.infura-ipfs.io/ipfs/QmTnLF4RnkuDL2yT8VawLTXKE4L5Px5uYnxtj6dNSF97q4",
+        handle: name || "Comrade",
+        bio: bio || "WAGMI",
       });
       notify({ title: "Profile edited successfully", type: "success" });
       setEditingProfile(false);
@@ -136,13 +133,13 @@ const EditProfileModal = ({ show, onClose, user, setEditingProfile }) => {
         <div>
           <div className="photo-cont">
             <img
-              src={cover ? cover.preview : user?.[3] || "/images/swing.jpeg"}
+              src={cover ? cover.preview : user?.[4] || "/images/swing.jpeg"}
               className="cover"
               alt="img"
             />{" "}
             <span className="dp">
               <img
-                src={dp ? dp.preview : user?.[4] || "/images/swing.jpeg"}
+                src={dp ? dp.preview : user?.[3] || "/images/swing.jpeg"}
                 className="cover"
                 alt="img"
               />
