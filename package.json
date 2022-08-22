@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "0xsequence": "^0.40.5",
+    "@0xsequence/web3modal": "^2.0.2",
     "@coinbase/wallet-sdk": "^3.3.0",
     "@emotion/react": "^11.9.3",
     "@emotion/styled": "^11.9.3",
@@ -20,6 +22,8 @@
     "@types/react-lottie": "^1.2.6",
     "@types/underscore": "^1.11.4",
     "@types/uuid": "^8.3.4",
+    "@uauth/js": "^2.3.0",
+    "@uauth/web3modal": "^2.2.0",
     "@walletconnect/web3-provider": "^1.7.8",
     "axios": "^0.27.2",
     "bignumber.js": "^9.0.2",
