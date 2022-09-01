@@ -7,7 +7,8 @@ import axios from "axios";
 
 import Web3Modal from "@0xsequence/web3modal";
 
-import * as UAuthWeb3Modal from "@uauth/web3modal";
+const UAuthWeb3Modal = require("@uauth/web3modal");
+
 import UAuthSPA from "@uauth/js";
 
 import { sequence } from "0xsequence";
@@ -51,11 +52,9 @@ interface Props {
 }
 
 const uauthOptions: UAuthWeb3Modal.IUAuthOptions = {
-  clientID:
-    process.env.NEXT_PUBLIC_UDOMAINS_KEY ||
-    "395e807b-6024-4280-91ad-7b867988dea8",
-  redirectUri: "http://localhost:3000",
-  scope: "openid wallet email:optional humanity_check:optional",
+  clientID: "d14e4742-45ab-409c-a538-61928156ddba",
+  redirectUri: "https://kasuwa-hackfs.vercel.app",
+  scope: "openid wallet",
 };
 
 let web3Modal;
@@ -63,15 +62,15 @@ let web3Modal;
 if (typeof window != "undefined") {
   // let connector = UAuthWeb3Modal.connector;
   let providerOptions = {
-    // "custom-uauth": {
-    //   display: UAuthWeb3Modal.display,
+    "custom-uauth": {
+      display: UAuthWeb3Modal.display,
 
-    //   connector: UAuthWeb3Modal?.connector,
+      connector: UAuthWeb3Modal?.connector,
 
-    //   package: UAuthSPA,
+      package: UAuthSPA,
 
-    //   options: uauthOptions,
-    // },
+      options: uauthOptions,
+    },
     walletconnect: {
       package: WalletConnect,
       options: {
@@ -101,7 +100,7 @@ if (typeof window != "undefined") {
     cacheProvider: true,
     theme: `dark`,
   });
-  // UAuthWeb3Modal?.registerWeb3Modal(web3Modal);
+  UAuthWeb3Modal?.registerWeb3Modal(web3Modal);
 }
 
 const privateKey = process.env.NEXT_PUBLIC_WALLET_PRIVATE_KEY;
