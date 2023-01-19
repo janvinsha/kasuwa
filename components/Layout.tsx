@@ -326,7 +326,7 @@ const Layout = ({ children }: Props) => {
         const { meta: update } = await db
           .prepare(
             `UPDATE 
-            ${usersTable} SET bio = ?2, handle = ?3, dp = ?4, banner = 5? WHERE id = ?1'`
+            ${usersTable} SET bio = ?2, handle = ?3, dp = ?4, banner = ?5 WHERE id = ?1`
           )
           .bind(
             profile.id,
@@ -380,35 +380,25 @@ const Layout = ({ children }: Props) => {
   const createListings = async (listing) => {
     try {
       const signer = tblWallet.connect(tblProvider);
-      const tbl = await connect({ signer });
-      const writeTx = await tbl.write(
-        `INSERT INTO ${listingsTable} VALUES ('${listing.id}', '${listing.orderJson}', '${listing.offers}','${listing.considerations}')`
-      );
-      console.log(writeTx);
+      const db = new Database({ signer });
+
+      const { meta: insert } = await db
+        .prepare(
+          `INSERT INTO ${listingsTable} (id, orderJson, offers, considerations) VALUES (?, ?, ?, ?);`
+        )
+        .bind(
+          listing.id,
+          listing.orderJson,
+          listing.offers,
+          listing.considerations
+        )
+        .run();
+      await insert?.txn?.wait();
     } catch (err) {
       console.log(err);
     }
   };
-  const createTable = async () => {
-    try {
-      console.log("CREATING TABLE ..........");
-      const signer = tblWallet.connect(tblProvider);
-      const tbl = await connect({ signer });
-      console.log(tbl, "THIS IS THE TBL");
-      const { name, txnHash } = await tbl.create(
-        `id text, name text,image text,owner text,decription text, price text, startDate text,endDate text, primary key (id)`, // Table schema definition
-        `collections` // Optional prefix; used to define a human-readable string
-      );
-      // const { name, txnHash } = await tbl.create(
-      //   `id text,bio text, handle text,dp text, banner text, primary key (id)`, // Table schema definition
-      //   `users` // Optional prefix; used to define a human-readable string
-      // );
-
-      console.log(name, txnHash, "HERE IS THE RESPONSE");
-    } catch (error) {
-      console.log(error, "THIS IS THE ERROR ");
-    }
-  };
+  const createTable = async () => {};
   return (
     <StyledLayout>
       <AppContext.Provider

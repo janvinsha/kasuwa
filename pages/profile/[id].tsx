@@ -109,8 +109,8 @@ export default function Profile() {
                 alt="img"
               />
               <span className="bio">
-                <h3>{foundUser ? foundUser?.bio : "Comrade"}</h3>
-                <p>{foundUser?.handle}</p>
+                <h3>{foundUser ? foundUser?.handle : "Comrade"}</h3>
+                <p>{foundUser?.bio}</p>
               </span>
             </div>
             <div className="dpBtns">
