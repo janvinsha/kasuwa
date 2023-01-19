@@ -10,7 +10,7 @@ import Web3Modal from "@0xsequence/web3modal";
 const UAuthWeb3Modal = require("@uauth/web3modal");
 
 import UAuthSPA from "@uauth/js";
-
+import { Database } from "@tableland/sdk";
 import { sequence } from "0xsequence";
 import WalletConnect from "@walletconnect/web3-provider";
 import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
@@ -286,15 +286,14 @@ const Layout = ({ children }: Props) => {
 
   const getProfile = async (id) => {
     try {
+      const db = Database.readOnly("maticmum"); // Polygon Mumbai testnet
       // id int, address text, bio text, handle text
       console.log("GETTING PROFILE........");
-      const signer = tblWallet.connect(tblProvider);
-      const tbl = await connect({ signer });
-      const { rows } = await tbl.read(
-        `SELECT * FROM ${usersTable} WHERE id = '${id}'`
-      );
-      console.log(rows);
-      return rows;
+      const { results } = await db
+        .prepare(`SELECT * FROM ${usersTable} WHERE id = '${id}'`)
+        .all();
+      console.log("WHAT IS THE GETPROFILE RETURNING", results);
+      return results;
     } catch (err) {
       console.log(err), "THIS IS THE ERROR";
     }
@@ -302,25 +301,49 @@ const Layout = ({ children }: Props) => {
 
   const updateProfile = async (profile) => {
     try {
-      console.log("UPDATING PROFILE.................");
       const signer = tblWallet.connect(tblProvider);
-      const tbl = await connect({ signer });
+      const db = new Database({ signer });
+      console.log("UPDATING PROFILE.................");
+
       const getResponse = await getProfile(profile.id);
       if (!getResponse[0]) {
         console.log("CREATING BECAUSE NO USER FOUND", profile);
-        const writeTx = await tbl.write(
-          `INSERT INTO ${usersTable} VALUES ('${profile.id}', '${profile.bio}', '${profile.handle}','${profile.dp}','${profile.banner}')`
-        );
-        console.log(writeTx);
-        return writeTx;
+        const { meta: insert } = await db
+          .prepare(
+            `INSERT INTO ${usersTable} (id, bio, handle, dp, banner) VALUES (?, ?, ?, ?, ?);`
+          )
+          .bind(
+            profile.id,
+            profile.bio,
+            profile.handle,
+            profile.dp,
+            profile.banner
+          )
+          .run();
+        await insert?.txn?.wait();
       } else {
         console.log("UPDATING BECAUSE USER FOUND", profile);
-        const writeTx = await tbl.write(`UPDATE ${usersTable}
-        SET Handle='${profile.handle}', Bio='${profile.bio}', Dp='${profile.dp}', Banner='${profile.banner}'
-        WHERE id = '${profile.id}'`);
-        console.log(writeTx);
-        return writeTx;
+        const { meta: update } = await db
+          .prepare(
+            `UPDATE 
+            ${usersTable} SET bio = ?2, handle = ?3, dp = ?4, banner = 5? WHERE id = ?1'`
+          )
+          .bind(
+            profile.id,
+            profile.bio,
+            profile.handle,
+            profile.dp,
+            profile.banner
+          )
+          .run();
+
+        await update?.txn?.wait();
       }
+      const { results } = await db
+        .prepare(`SELECT * FROM ${usersTable};`)
+        .all();
+      notify({ title: "Profile edited successfully", type: "success" });
+      return results;
     } catch (error) {
       console.log(error);
     }
@@ -328,24 +351,28 @@ const Layout = ({ children }: Props) => {
 
   const getListings = async () => {
     try {
-      const signer = tblWallet.connect(tblProvider);
-      const tbl = await connect({ signer });
-      const { rows } = await tbl.read(`SELECT * FROM ${listingsTable}`);
-      console.log(rows);
-      return rows;
+      const db = Database.readOnly("maticmum"); // Polygon Mumbai testnet
+
+      const { results } = await db
+        .prepare(`SELECT * FROM ${listingsTable};`)
+        .all();
+      console.log(results);
+
+      return results;
     } catch (err) {
       console.log(err);
     }
   };
   const getListing = async (id) => {
     try {
-      const signer = tblWallet.connect(tblProvider);
-      const tbl = await connect({ signer });
-      const { rows } = await tbl.read(
-        `SELECT * FROM ${listingsTable} WHERE id = '${id}'`
-      );
-      console.log(rows, "TRYING TO GET THE LISTING");
-      return rows;
+      const db = Database.readOnly("maticmum"); // Polygon Mumbai testnet
+
+      const { results } = await db
+        .prepare(`SELECT * FROM ${listingsTable} WHERE id = '${id}'`)
+        .all();
+      console.log(results);
+
+      return results;
     } catch (err) {
       console.log(err);
     }

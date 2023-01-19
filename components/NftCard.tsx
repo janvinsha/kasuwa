@@ -20,9 +20,11 @@ const NftCard = ({ listing }) => {
     getData();
   }, []);
   const getData = async () => {
-    let { data: orderData } = await axios.get(`${listing?.[1]}`);
-    let { data: offersData } = await axios.get(`${listing?.[2]}`);
-    let { data: considerationsData } = await axios.get(`${listing?.[3]}`);
+    let { data: orderData } = await axios.get(`${listing?.orderJson}`);
+    let { data: offersData } = await axios.get(`${listing?.offers}`);
+    let { data: considerationsData } = await axios.get(
+      `${listing?.considerations}`
+    );
 
     console.log(
       orderData,
@@ -36,15 +38,14 @@ const NftCard = ({ listing }) => {
     const res = await getProfile(`${orderData?.parameters?.offerer}`);
     console.log(
       "GET PRFOILE RESPOMSE HERE NFT CARD...................",
-      res,
-      listing?.[1]?.parameters?.offerer
+      res?.[0]
     );
     setFoundUser(res?.[0]);
   };
   return (
     <StyledNftCard
       theme_={theme}
-      onClick={() => router.push(`/listings/${listing?.[0]}`)}
+      onClick={() => router.push(`/listings/${listing?.id}`)}
     >
       <h2>Offer</h2>
       <ScrollContainer className="scroll-container" horizontal>
@@ -88,15 +89,11 @@ const NftCard = ({ listing }) => {
           <span className="nft_author">
             {" "}
             <img
-              src={
-                foundUser?.length > 2
-                  ? `${foundUser?.[4]}`
-                  : "/images/swing.jpeg"
-              }
+              src={foundUser ? `${foundUser?.dp}` : "/images/swing.jpeg"}
               alt="img"
               className="nft_author_image"
             />
-            <p>{foundUser?.length > 2 ? foundUser?.[2] : "Comrade"}</p>{" "}
+            <p>{foundUser?.handle || "Comrade"}</p>{" "}
           </span>{" "}
         </span>
       </div>

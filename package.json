@@ -18,7 +18,7 @@
     "@mui/material": "^5.8.7",
     "@opensea/seaport-js": "^1.0.4",
     "@swing.xyz/sdk": "^0.0.5",
-    "@tableland/sdk": "^2.0.2",
+    "@tableland/sdk": "^4.0.0-pre.3",
     "@types/react-lottie": "^1.2.6",
     "@types/underscore": "^1.11.4",
     "@types/uuid": "^8.3.4",

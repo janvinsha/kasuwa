@@ -34,9 +34,9 @@ const EditProfileModal = ({ show, onClose, user, setEditingProfile }) => {
     editingProfile,
     currentAccount,
   } = useContext(AppContext);
-  const [name, setName] = useState(user?.[2]);
+  const [name, setName] = useState(user?.handle);
 
-  const [bio, setBio] = useState(user?.[1]);
+  const [bio, setBio] = useState(user?.bio);
   const [dp, setDp] = useState();
   const [cover, setCover] = useState();
   const hiddenCoverInput = React.useRef(null);
@@ -107,7 +107,6 @@ const EditProfileModal = ({ show, onClose, user, setEditingProfile }) => {
         handle: name || "Comrade",
         bio: bio || "WAGMI",
       });
-      notify({ title: "Profile edited successfully", type: "success" });
       setEditingProfile(false);
 
       // console.log('IPFS UPLOAD FILE URL', url);
@@ -117,9 +116,7 @@ const EditProfileModal = ({ show, onClose, user, setEditingProfile }) => {
       notify({ title: "Error while editing profile", type: "error" });
     }
   };
-  const tabs = ["Edit Profile", "Change Profile picture"];
 
-  const [activeTab, setActiveTab] = useState("Edit Profile");
   console.log(name, bio);
   return (
     <Modal
@@ -133,13 +130,13 @@ const EditProfileModal = ({ show, onClose, user, setEditingProfile }) => {
         <div>
           <div className="photo-cont">
             <img
-              src={cover ? cover.preview : user?.[4] || "/images/swing.jpeg"}
+              src={cover ? cover.preview : user?.banner || "/images/swing.jpeg"}
               className="cover"
               alt="img"
             />{" "}
             <span className="dp">
               <img
-                src={dp ? dp.preview : user?.[3] || "/images/swing.jpeg"}
+                src={dp ? dp.preview : user?.dp || "/images/swing.jpeg"}
                 className="cover"
                 alt="img"
               />

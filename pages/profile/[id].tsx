@@ -37,9 +37,7 @@ export default function Profile() {
   const [profileModal, setProfileModal] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
   const [foundUser, setFoundUser] = useState([]);
-  let tabs = ["User Nfts", "Listed Items"];
 
-  const nfts = [{}, {}];
   const getProfileNfts = async () => {
     // let chainId = 137;
 
@@ -79,11 +77,9 @@ export default function Profile() {
   }, [foundAddress, currentAccount]);
 
   const getUserProfile = async () => {
-    if (currentAccount) {
-      const res = await getProfile(`${foundAddress}`);
-      console.log("GET PRFOILE RESPOMSE HERE", res);
-      setFoundUser(res?.[0]);
-    }
+    const res = await getProfile(`${foundAddress}`);
+    console.log("GET PRFOILE RESPOMSE HERE", res);
+    setFoundUser(res?.[0]);
   };
   const getData = async () => {
     const tempListings = await getListings();
@@ -102,27 +98,19 @@ export default function Profile() {
         <div className="profile">
           <div className="photo-cont">
             <img
-              src={
-                foundUser?.length > 2
-                  ? `${foundUser?.[4]}`
-                  : "/images/swing.jpeg"
-              }
+              src={foundUser ? `${foundUser?.banner}` : "/images/swing.jpeg"}
               className="cover"
               alt="img"
             />
             <div className="dp">
               <img
-                src={
-                  foundUser?.length > 2
-                    ? `${foundUser?.[3]}`
-                    : "/images/swing.jpeg"
-                }
+                src={foundUser ? `${foundUser?.dp}` : "/images/swing.jpeg"}
                 className="cover img"
                 alt="img"
               />
               <span className="bio">
-                <h3>{foundUser?.length > 2 ? foundUser?.[2] : "Comrade"}</h3>
-                <p>{foundUser?.[1]}</p>
+                <h3>{foundUser ? foundUser?.bio : "Comrade"}</h3>
+                <p>{foundUser?.handle}</p>
               </span>
             </div>
             <div className="dpBtns">
@@ -166,8 +154,11 @@ export default function Profile() {
               </span>
             </span>
             <div className="cards">
-              {activeTab === "User Nfts"
-                ? userNfts?.map((nft, i) => (
+              {activeTab === "Listed Items"
+                ? listings?.map((listing, i) => (
+                    <NftCard listing={listing} key={i} />
+                  ))
+                : userNfts?.map((nft, i) => (
                     <UserNftCard
                       nft={nft}
                       key={i}
@@ -176,9 +167,6 @@ export default function Profile() {
                         setCreateListingModal(true);
                       }}
                     />
-                  ))
-                : listings?.map((listing, i) => (
-                    <NftCard listing={listing} key={i} />
                   ))}
             </div>
           </div>
